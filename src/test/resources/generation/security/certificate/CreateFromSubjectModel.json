@@ -1,0 +1,6 @@
+{
+  "name": "MyCertificate",
+  "encryptionPassword": "My $tronG pas$w0rd",
+  "subject": "My subject",
+  "startDate": "20190830"
+}

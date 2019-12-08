@@ -1,0 +1,12 @@
+{
+  "name": "SimpleSqlLogin",
+  "principalKind": "SQL_LOGIN",
+  "defaultDatabase": "msdb",
+  "defaultLanguage": "us_english",
+  "loginPassword": "_Pas$Word_",
+  "isPolicyChecked": true,
+  "isExpirationChecked": true,
+  "denyLogin": true,
+  "isDisabled": true,
+  "mustChange": true
+}

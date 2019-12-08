@@ -1,0 +1,6 @@
+{
+  "name": "SimpleCertificate",
+  "userName": "MyUser",
+  "beginDialog": true,
+  "assemblyName": "MyAssembly"
+}

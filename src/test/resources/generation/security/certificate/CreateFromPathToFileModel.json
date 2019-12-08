@@ -1,0 +1,7 @@
+{
+  "name": "MyCertificate",
+  "assemblyPath": "C:\\MyAssembly.dll",
+  "privateKeyPath": "C:\\MyPrivateKey.cer",
+  "encryptionPassword": ">My $tronG pas$w0rd",
+  "decryptionPassword": "<My $tronG pas$w0rd"
+}

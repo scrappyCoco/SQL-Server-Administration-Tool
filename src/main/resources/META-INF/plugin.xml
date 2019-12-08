@@ -1,0 +1,231 @@
+<idea-plugin>
+    <id>ru.coding4fun.intellij.database</id>
+    <name>SQL Server Administration Tool</name>
+    <vendor email="coding4fun@list.ru" url="https://github.com/scrappyCoco/Painless-Transact-SQL">Coding4fun</vendor>
+    <version>2019.3.1</version>
+
+    <depends>com.intellij.database</depends>
+    <depends>com.intellij.modules.database</depends>
+    <depends>com.intellij.modules.sql</depends>
+
+    <description><![CDATA[
+        <p>This plugin allow to manage security and agent objects in MS SQL (Microsoft SQL Server).
+        For more information please checkout homepage in github.</p>
+    ]]></description>
+    <change-notes>
+        <![CDATA[
+        <p>This is the first version of the plugin. There were implemented a common features such as:</p>
+        <ul>
+            <li>Object properties in a dialog</li>
+            <li>Ability to create a script for a single object</li>
+        </ul>
+    ]]></change-notes>
+
+    <idea-version since-build="193.4099.12"/>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <webHelpProvider implementation="ru.coding4fun.intellij.database.MsWebHelpProvider"/>
+        <toolWindow id="MS SQL" anchor="left"
+                    factoryClass="ru.coding4fun.intellij.database.MsToolWindowFactory"/>
+        <!-- Database Access | Tree -->
+        <projectService
+                serviceInterface="ru.coding4fun.intellij.database.tree.MsTreeManager"
+                serviceImplementation="ru.coding4fun.intellij.database.tree.impl.MsTreeManagerImpl"/>
+        <!-- Database Access | Agent -->
+        <projectService serviceInterface="ru.coding4fun.intellij.database.data.property.agent.OperatorDataProvider"
+                        serviceImplementation="ru.coding4fun.intellij.database.data.property.agent.impl.OperatorDataProviderImpl"/>
+        <projectService serviceInterface="ru.coding4fun.intellij.database.data.property.agent.JobDataProvider"
+                        serviceImplementation="ru.coding4fun.intellij.database.data.property.agent.impl.JobDataProviderImpl"/>
+        <projectService serviceInterface="ru.coding4fun.intellij.database.data.property.agent.ScheduleDataProvider"
+                        serviceImplementation="ru.coding4fun.intellij.database.data.property.agent.impl.ScheduleDataProviderImpl"/>
+        <projectService serviceInterface="ru.coding4fun.intellij.database.data.property.agent.AlertDataProvider"
+                        serviceImplementation="ru.coding4fun.intellij.database.data.property.agent.impl.AlertDataProviderImpl"/>
+        <!-- Database Access | Security -->
+        <projectService
+                serviceInterface="ru.coding4fun.intellij.database.data.property.security.AsymmetricKeyDataProvider"
+                serviceImplementation="ru.coding4fun.intellij.database.data.property.security.impl.AsymmetricKeyDataProviderImpl"/>
+        <projectService
+                serviceInterface="ru.coding4fun.intellij.database.data.property.security.CertificateDataProvider"
+                serviceImplementation="ru.coding4fun.intellij.database.data.property.security.impl.CertificateDataProviderImpl"/>
+        <projectService
+                serviceInterface="ru.coding4fun.intellij.database.data.property.security.CredentialDataProvider"
+                serviceImplementation="ru.coding4fun.intellij.database.data.property.security.impl.CredentialDataProviderImpl"/>
+        <projectService
+                serviceInterface="ru.coding4fun.intellij.database.data.property.security.CryptographicDataProvider"
+                serviceImplementation="ru.coding4fun.intellij.database.data.property.security.impl.CryptographicDataProviderImpl"/>
+        <projectService
+                serviceInterface="ru.coding4fun.intellij.database.data.property.security.ServerAuditDataProvider"
+                serviceImplementation="ru.coding4fun.intellij.database.data.property.security.impl.ServerAuditDataProviderImpl"/>
+        <projectService
+                serviceInterface="ru.coding4fun.intellij.database.data.property.security.ServerAuditSpecificationDataProvider"
+                serviceImplementation="ru.coding4fun.intellij.database.data.property.security.impl.ServerAuditSpecificationDataProviderImpl"/>
+        <projectService
+                serviceInterface="ru.coding4fun.intellij.database.data.property.security.SymmetricKeyDataProvider"
+                serviceImplementation="ru.coding4fun.intellij.database.data.property.security.impl.SymmetricKeyDataProviderImpl"/>
+        <projectService
+                serviceInterface="ru.coding4fun.intellij.database.data.property.security.ServerRoleDataProvider"
+                serviceImplementation="ru.coding4fun.intellij.database.data.property.security.impl.ServerRoleDataProviderImpl"/>
+        <projectService
+                serviceInterface="ru.coding4fun.intellij.database.data.property.security.LoginDataProvider"
+                serviceImplementation="ru.coding4fun.intellij.database.data.property.security.impl.LoginDataProviderImpl"/>
+    </extensions>
+
+    <actions>
+        <action class="ru.coding4fun.intellij.database.action.connection.ConnectionFromMsAction"
+                id="ConnectionAction"
+                text="Open Administration Tool"
+                popup="true">
+            <add-to-group group-id="DatabaseView.Tools" anchor="last"/>
+        </action>
+
+        <group id="MssqlPopupMenuGroup">
+            <group popup="true" id="MssqlNewPopupMenuGroup" text="New">
+                <!-- Security | New -->
+                <action class="ru.coding4fun.intellij.database.action.security.NewLoginAction"
+                        icon="AllIcons.General.User"
+                        id="NewLogin"
+                        text="New Login"
+                        popup="true"/>
+                <action class="ru.coding4fun.intellij.database.action.security.NewServerRoleAction"
+                        icon="DatabaseIcons.Role"
+                        id="NewServerRole"
+                        text="New Server Role"
+                        popup="true"/>
+                <action class="ru.coding4fun.intellij.database.action.security.NewCredentialAction"
+                        icon="AllIcons.Ide.HectorOn"
+                        id="NewCredential"
+                        text="New Credential"
+                        popup="true"/>
+                <action class="ru.coding4fun.intellij.database.action.security.NewCryptographicProviderAction"
+                        icon="DatabaseIcons.GoldKey"
+                        id="NewCryptographicProvider"
+                        text="New Cryptographic Provider"
+                        popup="true"/>
+                <action class="ru.coding4fun.intellij.database.action.security.NewAuditAction"
+                        icon="AllIcons.Toolwindows.ToolWindowFind"
+                        id="NewAudit"
+                        text="New Audit"
+                        popup="true"/>
+                <action class="ru.coding4fun.intellij.database.action.security.NewServerAuditSpecificationAction"
+                        icon="AllIcons.General.InspectionsEye"
+                        id="NewServerAuditSpecification"
+                        text="New Server Audit Specification"
+                        popup="true"/>
+                <action class="ru.coding4fun.intellij.database.action.security.NewCertificateAction"
+                        icon="DatabaseIcons.Rule"
+                        id="NewCertificate"
+                        text="New Certificate"
+                        popup="true"/>
+                <action class="ru.coding4fun.intellij.database.action.security.NewSymmetricKeyAction"
+                        icon="DatabaseIcons.Rule"
+                        id="NewSymmetricKey"
+                        text="New Symmetric Key"
+                        popup="true"/>
+                <action class="ru.coding4fun.intellij.database.action.security.NewAsymmetricKeyAction"
+                        icon="DatabaseIcons.Rule"
+                        id="NewAsymmetricKey"
+                        text="New Asymmetric Key"
+                        popup="true"/>
+
+                <!-- Sql Agent | New -->
+                <action class="ru.coding4fun.intellij.database.action.agent.NewJobAction"
+                        id="NewJob"
+                        text="New Job"
+                        popup="true"/>
+                <action class="ru.coding4fun.intellij.database.action.agent.NewOperatorAction"
+                        icon="AllIcons.General.User"
+                        id="NewOperator"
+                        text="New Operator"
+                        popup="true"/>
+                <action class="ru.coding4fun.intellij.database.action.agent.NewScheduleAction"
+                        id="NewSchedule"
+                        text="New Schedule"
+                        popup="true"/>
+                <action class="ru.coding4fun.intellij.database.action.agent.NewAlertAction"
+                        icon="AllIcons.Actions.Lightning"
+                        id="NewAlertAction"
+                        text="New Alert"
+                        popup="true"/>
+                <action class="ru.coding4fun.intellij.database.action.agent.NewJobCategoryAction"
+                        icon="AllIcons.Nodes.Folder"
+                        id="NewJobCategory"
+                        text="New Job Category"
+                        popup="true"/>
+                <action class="ru.coding4fun.intellij.database.action.agent.NewAlertCategoryAction"
+                        icon="AllIcons.Nodes.Folder"
+                        id="NewAlertCategory"
+                        text="New Alert Category"
+                        popup="true"/>
+                <action class="ru.coding4fun.intellij.database.action.agent.NewOperatorCategoryAction"
+                        icon="AllIcons.Nodes.Folder"
+                        id="NewOperatorCategory"
+                        text="New Operator Category"
+                        popup="true"/>
+            </group>
+
+            <group popup="true" id="MssqlScriptPopupMenuGroup" text="SQL Script">
+                <action class="ru.coding4fun.intellij.database.action.script.CreateAction"
+                        id="MssqlCreate"
+                        text="Create"
+                        popup="true"/>
+                <action class="ru.coding4fun.intellij.database.action.script.DropAction"
+                        id="MssqlDrop"
+                        text="Drop"
+                        popup="true"/>
+                <action class="ru.coding4fun.intellij.database.action.script.DropAndCreateAction"
+                        id="MssqlDropAndCreate"
+                        text="Drop and Create"
+                        popup="true"/>
+            </group>
+
+            <separator/>
+
+            <action class="ru.coding4fun.intellij.database.action.common.EnableAction"
+                    id="MssqlEnable"
+                    text="Enable"
+                    popup="true"/>
+            <action class="ru.coding4fun.intellij.database.action.common.DisableAction"
+                    id="MssqlDisable"
+                    text="Disable"
+                    popup="true"/>
+
+            <separator/>
+
+            <action class="ru.coding4fun.intellij.database.action.common.StartAction"
+                    id="MssqlStart"
+                    text="Start"
+                    popup="true"/>
+            <action class="ru.coding4fun.intellij.database.action.common.StopAction"
+                    id="MssqlStop"
+                    text="Stop"
+                    popup="true"/>
+
+            <separator/>
+
+            <action class="ru.coding4fun.intellij.database.action.common.RefreshAction"
+                    icon="AllIcons.Actions.Refresh"
+                    id="MssqlRefresh"
+                    text="Refresh"
+                    popup="true"/>
+
+            <separator/>
+
+            <action class="ru.coding4fun.intellij.database.action.agent.PurgeJobHistoryAction"
+                    id="PurgeJobHistory"
+                    text="Purge Job History Action"
+                    popup="true"/>
+            <action class="ru.coding4fun.intellij.database.action.agent.tool.FindJobAction"
+                    id="FindJobAction"
+                    text="Find Job"
+                    popup="true"/>
+            <action class="ru.coding4fun.intellij.database.action.common.ViewAction"
+                    id="MssqlViewHistory"
+                    text="View History"
+                    popup="true"/>
+            <action class="ru.coding4fun.intellij.database.action.common.PropertiesAction"
+                    id="MssqlProperties"
+                    text="Properties"
+                    popup="true"/>
+        </group>
+    </actions>
+</idea-plugin>
