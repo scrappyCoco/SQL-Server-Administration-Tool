@@ -1,4 +1,4 @@
-DECLARE @operatorId INT = ??operatorId??;
+-- DECLARE @operatorId INT = ??operatorId??;
 
 SELECT id           = CAST(sysoperators.id AS VARCHAR(10)),
        name         = sysoperators.name,
@@ -8,4 +8,4 @@ SELECT id           = CAST(sysoperators.id AS VARCHAR(10)),
        categoryName = syscategories.name
 FROM msdb.dbo.sysoperators
 LEFT JOIN msdb.dbo.syscategories ON syscategories.category_id = sysoperators.category_id
-WHERE id = @operatorId;
+-- WHERE id = @operatorId;

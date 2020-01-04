@@ -259,6 +259,7 @@ public class LoginDialog extends JDialog implements ModelDialog<MsLoginModel> {
 	@Contract(" -> new")
 	private MsLogin getNewModel() {
 		return new MsLogin(
+				"",
 				loginNameTextField.getText(),
 				getPrincipalKind(),
 				DialogHelper.INSTANCE.getSelectedName(defaultDatabaseComboBox),

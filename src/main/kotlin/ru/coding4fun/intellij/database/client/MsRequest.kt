@@ -2,11 +2,9 @@ package ru.coding4fun.intellij.database.client
 
 import com.intellij.database.datagrid.DataConsumer
 import com.intellij.database.datagrid.DataRequest
-import com.intellij.notification.Notification
-import com.intellij.notification.NotificationType
-import com.intellij.notification.Notifications
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import ru.coding4fun.intellij.database.MsNotification
 import ru.coding4fun.intellij.database.model.property.agent.MsNotifyLevel
 import ru.coding4fun.intellij.database.model.property.agent.alert.AlertType
 import ru.coding4fun.intellij.database.model.property.security.MsServerAuditDestination
@@ -81,9 +79,9 @@ class MsRequest(project: Project, sql: String) :
 				val objectInstance = tConstructor.call(*cParameterValues)
 				objects.add(objectInstance)
 			} catch (e: Exception) {
-				val errorMessage = "Unable to create class " + T::class.simpleName
+				val errorMessage = "Unable to create an instance of the " + T::class.simpleName
 				Logger.getInstance(MsRequest::class.java).error(errorMessage, e)
-				Notifications.Bus.notify(Notification("MsSql", "MS SQL Error", errorMessage, NotificationType.ERROR))
+				MsNotification.error(errorMessage, errorMessage)
 			}
 		}
 

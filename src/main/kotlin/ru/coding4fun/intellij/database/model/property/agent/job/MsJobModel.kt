@@ -9,7 +9,7 @@ import ru.coding4fun.intellij.database.ui.form.common.toModificationList
 class MsJobModel : Named {
 	lateinit var job: ModelModification<MsJob>
 	lateinit var categories: List<BasicIdentity>
-	lateinit var operaotrs: List<BasicIdentity>
+	lateinit var operators: List<BasicIdentity>
 	lateinit var steps: List<MsJobStep>
 	lateinit var schedules: List<MsSchedule>
 	lateinit var alerts: List<MsAlert>

@@ -6,6 +6,7 @@ import ru.coding4fun.intellij.database.client.MsClient
 import ru.coding4fun.intellij.database.client.MsConnectionManager
 import ru.coding4fun.intellij.database.client.QueryDefinition
 import ru.coding4fun.intellij.database.extension.treeLabel
+import ru.coding4fun.intellij.database.message.DataProviderMessages
 import ru.coding4fun.intellij.database.model.tree.MsKind
 import ru.coding4fun.intellij.database.model.tree.isRoot
 import ru.coding4fun.intellij.database.tree.MsTreeManager
@@ -29,57 +30,57 @@ class MsTreeManagerImpl(project: Project) : MsTreeManager, MsClient(project) {
 		//region Agent
 		MsKind.JOB_FOLDER to Pair(
 			"sql/tree/agent/Job.sql",
-			"Updating Jobs"
+			DataProviderMessages.message("tree.agent.job")
 		),
 		MsKind.SCHEDULE_FOLDER to Pair(
 			"sql/tree/agent/Schedule.sql",
-			"Updating Schedules"
+			DataProviderMessages.message("tree.agent.schedule")
 		),
 		MsKind.ALERT_FOLDER to Pair(
 			"sql/tree/agent/Alert.sql",
-			"Updating Alerts"
+			DataProviderMessages.message("tree.agent.alert")
 		),
 		MsKind.OPERATOR_FOLDER to Pair(
 			"sql/tree/agent/Operator.sql",
-			"Updating Operators"
+			DataProviderMessages.message("tree.agent.operator")
 		),
 		MsKind.AGENT_ERROR_LOG_FOLDER to Pair(
 			"sql/tree/agent/ErrorLog.sql",
-			"Updating Error Logs"
+			DataProviderMessages.message("tree.agent.log")
 		),
 		//endregion
 		//region Security
 		MsKind.SERVER_PRINCIPAL_FOLDER to Pair(
 			"sql/tree/security/ServerPrincipal.sql",
-			"Updating Server Principals"
+			DataProviderMessages.message("tree.security.login")
 		),
 		MsKind.CREDENTIAL_FOLDER to Pair(
 			"sql/tree/security/Credential.sql",
-			"Updating Credentials"
+			DataProviderMessages.message("tree.security.credential")
 		),
 		MsKind.CRYPTOGRAPHIC_PROVIDER_FOLDER to Pair(
 			"sql/tree/security/CryptographicProvider.sql",
-			"Updating Cryptographic Providers"
+			DataProviderMessages.message("tree.security.crypto")
 		),
 		MsKind.AUDIT_FOLDER to Pair(
 			"sql/tree/security/Audit.sql",
-			"Updating Audits"
+			DataProviderMessages.message("tree.security.server.audit")
 		),
 		MsKind.SERVER_AUDIT_SPECIFICATION_FOLDER to Pair(
 			"sql/tree/security/AuditSpecification.sql",
-			"Updating Audit Specifications"
+			DataProviderMessages.message("tree.security.server.audit.specification")
 		),
 		MsKind.CERTIFICATE_FOLDER to Pair(
 			"sql/tree/security/Certificate.sql",
-			"Updating Certificates"
+			DataProviderMessages.message("tree.security.certificate")
 		),
 		MsKind.SYMMETRIC_KEY_FOLDER to Pair(
 			"sql/tree/security/SymmetricKey.sql",
-			"Updating Symmetric Keys"
+			DataProviderMessages.message("tree.security.symmetric.key")
 		),
 		MsKind.ASYMMETRIC_KEY_FOLDER to Pair(
 			"sql/tree/security/AsymmetricKey.sql",
-			"Updating Asymmetric Keys"
+			DataProviderMessages.message("tree.security.asymmetric.key")
 		)
 		//endregion
 	)

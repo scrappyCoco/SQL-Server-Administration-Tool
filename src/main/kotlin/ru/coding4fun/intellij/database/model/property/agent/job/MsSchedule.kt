@@ -7,7 +7,8 @@ data class MsSchedule(
 	override var id: String,
 	override var name: String,
 	override var isSelected: Boolean,
-	override var isEnabled: Boolean
+	override var isEnabled: Boolean,
+	var jobId: String?
 ) : Identity, Copyable<MsSchedule>, Selection, Kind, Enable {
 	override fun getCopy(): MsSchedule = copy()
 	override val kind: MsKind = MsKind.SCHEDULE

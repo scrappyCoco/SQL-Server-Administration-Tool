@@ -1,5 +1,3 @@
-DECLARE @alertId INT = ??alertId??;
-
 DECLARE @tmp_sp_help_alert TABLE
                            (
                                id                        INT              NULL,
@@ -56,5 +54,4 @@ SELECT id                   = CAST(id AS VARCHAR(10)),
        minutes              = delay_between_responses / 60,
        seconds              = delay_between_responses % 60
        -- endregion
-FROM @tmp_sp_help_alert
-WHERE @alertId = id;
+FROM @tmp_sp_help_alert;

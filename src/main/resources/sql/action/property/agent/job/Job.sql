@@ -1,5 +1,3 @@
-DECLARE @jobId UNIQUEIDENTIFIER = '??jobId??';
-
 SELECT id                = CAST(sysjobs.job_id AS VARCHAR(50)),
        name              = sysjobs.name,
        isEnabled         = CAST(sysjobs.enabled AS BIT),
@@ -13,7 +11,7 @@ SELECT id                = CAST(sysjobs.job_id AS VARCHAR(50)),
        lastExecuted      = (
                                SELECT TOP 1 CAST(sysjobhistory.run_date AS VARCHAR(20))
                                FROM msdb.dbo.sysjobhistory
-                               WHERE sysjobhistory.job_id = @jobId
+                               WHERE sysjobhistory.job_id = sysjobs.job_id
                            ),
        eMailNotifyLevel  = CAST(NULLIF(sysjobs.notify_level_email, 0) AS TINYINT),
        eventLogLevel     = CAST(NULLIF(sysjobs.notify_level_eventlog, 0) AS TINYINT),
@@ -23,5 +21,4 @@ SELECT id                = CAST(sysjobs.job_id AS VARCHAR(50)),
 FROM msdb.dbo.sysjobs
 LEFT JOIN sys.syslogins ON syslogins.sid = sysjobs.owner_sid
 LEFT JOIN msdb.dbo.syscategories ON syscategories.category_id = sysjobs.category_id
-LEFT JOIN msdb.dbo.sysoperators ON sysoperators.id = sysjobs.notify_email_operator_id
-WHERE @jobId = sysjobs.job_id;
+LEFT JOIN msdb.dbo.sysoperators ON sysoperators.id = sysjobs.notify_email_operator_id;

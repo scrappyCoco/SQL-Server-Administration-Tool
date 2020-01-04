@@ -1,9 +1,19 @@
-DECLARE @sql NVARCHAR(MAX) = N'
-SELECT id   = N''??db??'' + N'':^%^:'' + CAST(symmetric_keys.symmetric_key_id AS NVARCHAR(MAX)),
+DECLARE @ASYM_KEY_TEMPLATE NVARCHAR(MAX) = N'UNION ALL
+SELECT id   = N''$$DB_NAME$$'' + N'':^%^:'' + CAST(symmetric_keys.symmetric_key_id AS NVARCHAR(MAX)),
        name = symmetric_keys.name,
-       db   = N''??db??''
-FROM [??db??].sys.symmetric_keys
-WHERE @keyId = symmetric_key_id;
+       db   = N''$$DB_NAME$$''
+FROM [$$DB_NAME$$].sys.symmetric_keys
 ';
 
-EXEC sys.sp_executesql @sql, N'@keyId INT', @keyId = ??keyId??;
+DECLARE @symmetricKeysSql NVARCHAR(MAX) = N'';
+
+SELECT @symmetricKeysSql += REPLACE(@ASYM_KEY_TEMPLATE, '$$DB_NAME$$', databases.name)
+FROM sys.databases
+WHERE databases.state_desc = 'ONLINE';
+
+SET @symmetricKeysSql = '
+SELECT *
+FROM (' + STUFF(@symmetricKeysSql, 1, LEN('UNION ALL'), '') + ') AS SymmetricKeys;
+';
+
+EXEC sys.sp_executesql @symmetricKeysSql

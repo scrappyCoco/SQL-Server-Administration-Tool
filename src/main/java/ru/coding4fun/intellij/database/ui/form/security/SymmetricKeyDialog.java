@@ -76,6 +76,7 @@ public class SymmetricKeyDialog extends JDialog implements ModelDialog<MsSymmetr
 
 	public MsSymmetricKey getNewModel() {
 		return new MsSymmetricKey(
+				"",
 				nameTextField.getText(),
 				TextFieldGetter.INSTANCE.getText(authorizationTextField),
 				TextFieldGetter.INSTANCE.getText(providerTextField),

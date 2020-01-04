@@ -1,8 +1,9 @@
 package ru.coding4fun.intellij.database.model.property.security.login
 
-import ru.coding4fun.intellij.database.model.common.Named
+import ru.coding4fun.intellij.database.model.common.Identity
 
 data class MsLogin(
+	override var id: String = "",
 	override var name: String,
 	var principalKind: String,
 	var defaultDatabase: String? = null,
@@ -18,4 +19,4 @@ data class MsLogin(
 	var credential: String? = null,
 	var certificate: String? = null,
 	var asymmetricKey: String? = null
-) : Named
+) : Identity

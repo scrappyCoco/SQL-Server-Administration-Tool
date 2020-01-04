@@ -46,4 +46,47 @@ class ScheduleDataProviderImpl(project: Project) : MsClient(project), ScheduleDa
 			queries,
 			Consumer { consumer.accept(composite) })
 	}
+
+	override fun getModels(
+        objectIds: Array<String>?,
+        successConsumer: Consumer<Map<String, MsScheduleModel>>,
+        errorConsumer: Consumer<Exception>
+    ) {
+		val models: HashMap<String, MsScheduleModel> =
+			objectIds?.associateTo(HashMap(), { it to MsScheduleModel() }) ?: HashMap()
+		val queries = arrayListOf<QueryDefinition>()
+
+//		if (objectId == null) {
+//			composite.schedule = ModelModification(null, null)
+//			queries.add(QueryDefinition(
+//				"sql/action/property/agent/schedule/DefaultJobs.sql",
+//				DataProviderMessages.message("agent.schedule.progress.job"),
+//				Consumer { composite.jobs = it.getObjects() }
+//			))
+//		} else {
+//			queries.add(
+//				QueryDefinition(
+//					"sql/action/property/agent/schedule/Jobs.sql",
+//					DataProviderMessages.message("agent.schedule.progress.job"),
+//					Consumer { composite.jobs = it.getObjects() },
+//					hashMapOf("scheduleId" to objectId)
+//				)
+//			)
+//
+//			queries.add(
+//				QueryDefinition(
+//					"sql/action/property/agent/schedule/Schedule.sql",
+//					DataProviderMessages.message("agent.schedule.progress.schedule"),
+//					Consumer { composite.schedule = it.getModObject() },
+//					hashMapOf("scheduleId" to objectId)
+//				)
+//			)
+//		}
+
+		invokeComposite(
+			DataProviderMessages.message("agent.schedule.progress.task"),
+			queries,
+			Consumer { successConsumer.accept(models) },
+			errorConsumer)
+	}
 }

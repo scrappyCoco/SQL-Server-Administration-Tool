@@ -30,7 +30,8 @@ object PermissionDataToUiAdapter {
 					serverPermission?.grantor,
 					serverPermission?.grant ?: false,
 					serverPermission?.withGrant ?: false,
-					serverPermission?.deny ?: false
+					serverPermission?.deny ?: false,
+					""
 				)
 			}
 			.toList()

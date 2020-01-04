@@ -9,7 +9,8 @@ import ru.coding4fun.intellij.database.model.tree.MsKind
 data class Operator(
 	override var id: String,
 	override var name: String,
-	override var isSelected: Boolean
+	override var isSelected: Boolean,
+	var alertId: String
 ) : Identity, Copyable<Operator>, Kind, Selection {
 	override val kind: MsKind = MsKind.OPERATOR
 	override fun getCopy(): Operator = copy()

@@ -14,7 +14,8 @@ data class MsServerPermission(
 	var grantor: String?,
 	var grant: Boolean,
 	var withGrant: Boolean,
-	var deny: Boolean
+	var deny: Boolean,
+	var principalId: String
 ) : Identity, Copyable<MsServerPermission>, Selection {
 	override var isSelected
 		get() = getBitMask() > 0

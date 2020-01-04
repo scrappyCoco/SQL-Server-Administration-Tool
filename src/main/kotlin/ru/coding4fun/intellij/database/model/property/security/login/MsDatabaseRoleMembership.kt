@@ -9,7 +9,8 @@ data class MsDatabaseRoleMembership(
 	override var id: String,
 	override var name: String,
 	override var isSelected: Boolean,
-	var databaseName: String
+	var databaseName: String,
+	var principalId: String?
 ) : Selection, Copyable<MsDatabaseRoleMembership>, Kind {
 	override val kind: MsKind = MsKind.DATABASE_ROLE
 	override fun getCopy(): MsDatabaseRoleMembership = copy()

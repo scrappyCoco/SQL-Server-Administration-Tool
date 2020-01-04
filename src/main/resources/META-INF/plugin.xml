@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>ru.coding4fun.intellij.database</id>
     <name>SQL Server Administration Tool</name>
-    <vendor email="coding4fun@list.ru" url="https://github.com/scrappyCoco/Painless-Transact-SQL">Coding4fun</vendor>
+    <vendor email="coding4fun@list.ru" url="https://github.com/scrappyCoco/SQL-Server-Administration-Tool">Coding4fun</vendor>
     <version>2019.3.1</version>
 
     <depends>com.intellij.database</depends>

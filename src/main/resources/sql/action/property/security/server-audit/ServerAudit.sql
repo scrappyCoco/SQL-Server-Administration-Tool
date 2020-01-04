@@ -1,5 +1,3 @@
-DECLARE @auditGuid UNIQUEIDENTIFIER = '??auditGuid??';
-
 SELECT id                = CAST(server_audits.audit_guid AS VARCHAR(50)),
        name              = server_audits.name,
        isEnabled         = server_audits.is_state_enabled,
@@ -13,5 +11,4 @@ SELECT id                = CAST(server_audits.audit_guid AS VARCHAR(50)),
        maxFiles          = server_file_audits.max_files,
        reserveDiskSpace  = server_file_audits.reserve_disk_space
 FROM sys.server_audits
-LEFT JOIN sys.server_file_audits ON server_file_audits.audit_id = server_audits.audit_id
-WHERE @auditGuid = server_audits.audit_guid;
+LEFT JOIN sys.server_file_audits ON server_file_audits.audit_id = server_audits.audit_id;

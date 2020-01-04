@@ -1,4 +1,4 @@
-DECLARE @jobId UNIQUEIDENTIFIER = '??jobId??';
+-- DECLARE @jobId UNIQUEIDENTIFIER = '??jobId??';
 
 SELECT id              = CAST(sysjobsteps.step_id AS VARCHAR(50)),
        name            = sysjobsteps.step_name,
@@ -18,8 +18,9 @@ SELECT id              = CAST(sysjobsteps.step_id AS VARCHAR(50)),
        overrideTable   = CAST(IIF(sysjobsteps.flags & 16 = 16, 1, 0) AS BIT),
        stepHistory     = CAST(IIF(sysjobsteps.flags & 4 = 4, 1, 0) AS BIT),
        jobHistory      = CAST(IIF(sysjobsteps.flags & 32 = 32, 1, 0) AS BIT),
-       abortEvent      = CAST(IIF(sysjobsteps.flags & 64 = 64, 1, 0) AS BIT)
+       abortEvent      = CAST(IIF(sysjobsteps.flags & 64 = 64, 1, 0) AS BIT),
+       jobId           = CAST(sysjobsteps.job_id AS VARCHAR(100))
 FROM msdb.dbo.sysjobsteps
-LEFT JOIN msdb.dbo.sysproxies ON sysproxies.proxy_id = sysjobsteps.proxy_id
-WHERE sysjobsteps.job_id = @jobId
+         LEFT JOIN msdb.dbo.sysproxies ON sysproxies.proxy_id = sysjobsteps.proxy_id
+--WHERE sysjobsteps.job_id = @jobId
 ORDER BY sysjobsteps.step_id;

@@ -1,17 +1,18 @@
-DECLARE @ServerPrincipalId INT = ??serverPrincipalId??;
+--DECLARE @ServerPrincipalId INT = ??serverPrincipalId??;
 
 DECLARE @ROLE_TEMPLATE NVARCHAR(MAX) = N'UNION ALL
 SELECT id           = ''$$DB_NAME$$:'' + CAST(Roles.principal_id AS VARCHAR(100)),
        name         = CAST(Roles.name COLLATE DATABASE_DEFAULT AS NVARCHAR(MAX)),
        isSelected   = CAST(MAX(IIF(server_principals.sid IS NULL, 0, 1)) AS BIT),
-       databaseName = ''$$DB_NAME$$''
+       databaseName = ''$$DB_NAME$$'',
+       principalId  = CAST(server_principals.principal_id AS VARCHAR(100))
 FROM [$$DB_NAME$$].sys.database_principals AS Roles
 LEFT JOIN [$$DB_NAME$$].sys.database_role_members ON database_role_members.role_principal_id = Roles.principal_id
 LEFT JOIN [$$DB_NAME$$].sys.database_principals AS Users ON Users.principal_id = database_role_members.member_principal_id
 LEFT JOIN master.sys.server_principals
-          ON server_principals.sid = Users.sid AND server_principals.principal_id = @ServerPrincipalId
+          ON server_principals.sid = Users.sid-- AND server_principals.principal_id = @ServerPrincipalId
 WHERE Roles.type_desc = ''DATABASE_ROLE''
-GROUP BY Roles.principal_id, Roles.name
+GROUP BY Roles.principal_id, Roles.name, server_principals.principal_id
 ';
 
 DECLARE @roleSql NVARCHAR(MAX) = N'';
@@ -28,4 +29,4 @@ ORDER BY databaseName,
          name;
 ';
 
-EXEC sys.sp_executesql @roleSql, N'@ServerPrincipalId INT', @ServerPrincipalId = @ServerPrincipalId;
+EXEC sys.sp_executesql @roleSql--, N'@ServerPrincipalId INT', @ServerPrincipalId = @ServerPrincipalId;

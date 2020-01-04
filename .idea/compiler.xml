@@ -4,6 +4,8 @@
     <bytecodeTargetLevel>
       <module name="SQL Server Aministration Tool.main" target="11" />
       <module name="SQL Server Aministration Tool.test" target="11" />
+      <module name="SQL_Server_Aministration_Tool.main" target="11" />
+      <module name="SQL_Server_Aministration_Tool.test" target="11" />
     </bytecodeTargetLevel>
   </component>
 </project>

@@ -1,4 +1,4 @@
-DECLARE @principalId INT = ??principalId??;
+--DECLARE @principalId INT = ??principalId??;
 
 SELECT id                  = CAST(p.principal_id AS VARCHAR(10)),
        name                = p.name,
@@ -18,4 +18,4 @@ LEFT JOIN sys.syslogins l ON l.name = p.name
 LEFT JOIN sys.sql_logins ON sql_logins.name = l.name
 LEFT JOIN sys.server_principal_credentials ON server_principal_credentials.principal_id = sql_logins.principal_id
 LEFT JOIN sys.credentials ON credentials.credential_id = server_principal_credentials.credential_id
-WHERE p.principal_id = @principalId;
+--WHERE p.principal_id = @principalId;

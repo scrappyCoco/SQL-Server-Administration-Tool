@@ -1,10 +1,9 @@
 package ru.coding4fun.intellij.database.model.property.security
 
-
-import ru.coding4fun.intellij.database.model.common.Named
-
+import ru.coding4fun.intellij.database.model.common.Identity
 
 class MsSymmetricKey(
+	override var id: String,
 	override var name: String,
 	var authorization: String? = null,
 	var providerName: String? = null,
@@ -18,7 +17,7 @@ class MsSymmetricKey(
 	var symmetricKey: String? = null,
 	var asymmetricKey: String? = null,
 	var db: String
-) : Named {
+): Identity {
 	override fun toString(): String {
 		return name
 	}

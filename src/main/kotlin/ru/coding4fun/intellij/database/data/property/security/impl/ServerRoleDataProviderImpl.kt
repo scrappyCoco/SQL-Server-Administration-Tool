@@ -75,4 +75,12 @@ class ServerRoleDataProviderImpl(project: Project) : MsClient(project), ServerRo
 
 		invokeComposite(DataProviderMessages.message("security.server.role.progress.task"), queries, Consumer { consumer.accept(model) })
 	}
+
+	override fun getModels(
+        objectIds: Array<String>?,
+        successConsumer: Consumer<Map<String, MsServerRoleModel>>,
+        errorConsumer: Consumer<Exception>
+    ) {
+		TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+	}
 }

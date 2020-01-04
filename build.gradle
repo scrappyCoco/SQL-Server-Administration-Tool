@@ -54,5 +54,5 @@ compileTestKotlin {
 intellij {
     type 'IU'
     plugins 'DatabaseTools'
-    version 'LATEST-EAP-SNAPSHOT'
+    version '2019.3'
 }

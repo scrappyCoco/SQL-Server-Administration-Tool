@@ -11,4 +11,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'SQL Server Aministration Tool'
+rootProject.name = 'SQL Server Administration Tool'
