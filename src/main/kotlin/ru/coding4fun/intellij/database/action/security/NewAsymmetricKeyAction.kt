@@ -7,7 +7,7 @@ import ru.coding4fun.intellij.database.model.property.security.MsAsymmetricKeyMo
 import ru.coding4fun.intellij.database.ui.form.security.AsymmetricKeyDialog
 
 class NewAsymmetricKeyAction : NewModelAction<MsAsymmetricKeyModel, AsymmetricKeyDialog>(
-	KindPaths.asymmetricKey,
-	AsymmetricKeyDialog(),
-	SecurityDataProviders::getAsymmetricKey
+    KindPaths.asymmetricKey,
+    { AsymmetricKeyDialog() },
+    SecurityDataProviders::getAsymmetricKey
 )

@@ -311,6 +311,12 @@ public class AlertDialog extends JDialog implements ModelDialog<MsAlertModel> {
 		return "AlertDialog";
 	}
 
+	@Nullable
+	@Override
+	public String getModelHelpId() {
+		return "ru.coding4fun.intellij.database.help.agent.alert";
+	}
+
 	private enum PerfLevel {
 		Object,
 		Counter,

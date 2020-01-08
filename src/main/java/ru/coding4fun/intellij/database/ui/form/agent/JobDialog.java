@@ -382,6 +382,12 @@ public class JobDialog extends JDialog implements ModelDialog<MsJobModel> {
 		return "JobDialog";
 	}
 
+	@Nullable
+	@Override
+	public String getModelHelpId() {
+		return "ru.coding4fun.intellij.database.help.agent.job";
+	}
+
 	private enum Bits {
 		OverrideFile("0", "Overwrite output file"),
 		AppendFile("2", "Append to output file"),

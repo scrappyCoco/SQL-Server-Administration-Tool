@@ -7,7 +7,7 @@ import ru.coding4fun.intellij.database.model.property.security.MsCertificateMode
 import ru.coding4fun.intellij.database.ui.form.security.CertificateDialog
 
 class NewCertificateAction : NewModelAction<MsCertificateModel, CertificateDialog>(
-	KindPaths.certificate,
-	CertificateDialog(),
-	SecurityDataProviders::getCertificate
+    KindPaths.certificate,
+    { CertificateDialog() },
+    SecurityDataProviders::getCertificate
 )

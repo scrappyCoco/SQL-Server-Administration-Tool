@@ -7,7 +7,7 @@ import ru.coding4fun.intellij.database.model.property.security.MsServerRoleModel
 import ru.coding4fun.intellij.database.ui.form.security.ServerRoleDialog
 
 class NewServerRoleAction : NewModelAction<MsServerRoleModel, ServerRoleDialog>(
-	KindPaths.role,
-	ServerRoleDialog(),
-	SecurityDataProviders::getServerRole
+    KindPaths.role,
+    { ServerRoleDialog() },
+    SecurityDataProviders::getServerRole
 )

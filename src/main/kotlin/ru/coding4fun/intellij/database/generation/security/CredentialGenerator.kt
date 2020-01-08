@@ -15,9 +15,11 @@ object CredentialGenerator : ScriptGeneratorBase<MsCredentialModel>() {
 		if (reverse) model.credential.reverse()
 		val credential = model.credential.new!!
 		scriptBuilder.append("CREATE CREDENTIAL [", credential.name, "]").appendJbLn()
-			.addSeparatorScope("  WITH ") { scriptBuilder.append(",").appendJbLn().append("  ") }.also {
+			.addSeparatorScope("  WITH ") { scriptBuilder.appendJbLn().append("  ") }.also {
 				it.invoke { scriptBuilder.append("IDENTITY = '", credential.identityName, "'") }
-				it.invokeIf(!credential.password.isNullOrBlank()) {
+				val hasPassword = !credential.password.isNullOrBlank()
+				if (hasPassword) scriptBuilder.append(",")
+				it.invokeIf(hasPassword) {
 					scriptBuilder.append("SECRET = '", credential.password, "'")
 				}
 				it.invokeIf(!credential.providerName.isNullOrBlank()) {

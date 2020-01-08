@@ -1,6 +1,6 @@
 DECLARE @ASYM_KEY_TEMPLATE NVARCHAR(MAX) = N'UNION ALL
 SELECT id        = N''$$DB_NAME$$'' + N'':^%^:'' + CAST(asymmetric_key_id AS NVARCHAR(MAX)),
-       name      = name,
+       name      = name COLLATE DATABASE_DEFAULT,
        algorithm = algorithm_desc,
        db        = N''$$DB_NAME$$''
 FROM [$$DB_NAME$$].sys.asymmetric_keys
@@ -12,9 +12,6 @@ SELECT @asymmetricKeysSql += REPLACE(@ASYM_KEY_TEMPLATE, '$$DB_NAME$$', database
 FROM sys.databases
 WHERE databases.state_desc = 'ONLINE';
 
-SET @asymmetricKeysSql = '
-SELECT *
-FROM (' + STUFF(@asymmetricKeysSql, 1, LEN('UNION ALL'), '') + ') AS AsymmetricKeys;
-';
+SET @asymmetricKeysSql = STUFF(@asymmetricKeysSql, 1, LEN('UNION ALL'), '');
 
-EXEC sys.sp_executesql @asymmetricKeysSql
+EXEC sys.sp_executesql @asymmetricKeysSql;

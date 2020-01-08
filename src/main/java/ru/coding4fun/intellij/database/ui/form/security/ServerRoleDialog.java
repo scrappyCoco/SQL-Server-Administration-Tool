@@ -4,6 +4,7 @@ import com.intellij.ui.CheckBoxList;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function2;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase;
 import ru.coding4fun.intellij.database.generation.security.ServerRoleGenerator;
 import ru.coding4fun.intellij.database.model.common.BuiltinPermission;
@@ -147,5 +148,11 @@ public class ServerRoleDialog extends JDialog implements ModelDialog<MsServerRol
 	@Override
 	public String getDialogId() {
 		return "ServerRoleDialog";
+	}
+
+	@Nullable
+	@Override
+	public String getModelHelpId() {
+		return "ru.coding4fun.intellij.database.help.security.server.role";
 	}
 }

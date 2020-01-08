@@ -3,6 +3,8 @@ package ru.coding4fun.intellij.database.ui.form.security;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function2;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import ru.coding4fun.intellij.database.data.property.DbNull;
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase;
 import ru.coding4fun.intellij.database.generation.security.ServerAuditGenerator;
 import ru.coding4fun.intellij.database.model.property.security.MsServerAudit;
@@ -141,7 +143,7 @@ public class ServerAuditDialog extends JDialog implements ModelDialog<MsServerAu
 
 
 		return new MsServerAudit(
-				"",
+				DbNull.value,
 				TextFieldGetter.INSTANCE.getTextOrCompute(auditNameTextField, () -> ""),
 				true,
 				TextFieldGetter.INSTANCE.getInt(queueDelayTextField),
@@ -264,5 +266,11 @@ public class ServerAuditDialog extends JDialog implements ModelDialog<MsServerAu
 	@Override
 	public String getDialogId() {
 		return "ServerAuditDialog";
+	}
+
+	@Nullable
+	@Override
+	public String getModelHelpId() {
+		return "ru.coding4fun.intellij.database.help.security.server.audit";
 	}
 }

@@ -11,11 +11,11 @@ import javax.swing.JDialog
 
 abstract class NewModelAction<Model, Dialog>(
 	private val targetKinds: Set<MsKind>,
-	private val dialog: Dialog,
+	private val createDialog: (() -> Dialog),
 	private val dataProviderFun: ((Project) -> ModelDataProvider<Model>)
 ): AnAction()
 	where Dialog: ModelDialog<Model>,
 		  Dialog: JDialog {
-	override fun actionPerformed(e: AnActionEvent) = displayDialog(dialog, e.project!!, dataProviderFun(e.project!!), null)
+	override fun actionPerformed(e: AnActionEvent) = displayDialog(createDialog.invoke(), e.project!!, dataProviderFun(e.project!!), null)
 	override fun update(e: AnActionEvent) = ScriptActionUtil.updateVisibility(e, targetKinds)
 }

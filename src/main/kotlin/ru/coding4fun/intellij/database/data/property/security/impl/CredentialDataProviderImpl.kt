@@ -3,6 +3,7 @@ package ru.coding4fun.intellij.database.data.property.security.impl
 import com.intellij.openapi.project.Project
 import ru.coding4fun.intellij.database.client.MsClient
 import ru.coding4fun.intellij.database.client.QueryDefinition
+import ru.coding4fun.intellij.database.data.property.DbNull
 import ru.coding4fun.intellij.database.data.property.security.CredentialDataProvider
 import ru.coding4fun.intellij.database.message.DataProviderMessages
 import ru.coding4fun.intellij.database.model.common.BasicIdentity
@@ -63,7 +64,7 @@ class CredentialDataProviderImpl(project: Project) : MsClient(project), Credenti
         )
 
         if (objectIds == null) {
-            models[""] = MsCredentialModel().also { it.credential = ModelModification(null, null) }
+            models[DbNull.value] = MsCredentialModel()
         } else {
             queries.add(
                 QueryDefinition(

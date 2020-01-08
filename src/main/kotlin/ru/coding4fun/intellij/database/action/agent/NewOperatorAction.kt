@@ -7,7 +7,7 @@ import ru.coding4fun.intellij.database.model.property.agent.operator.MsOperatorM
 import ru.coding4fun.intellij.database.ui.form.agent.OperatorDialog
 
 class NewOperatorAction : NewModelAction<MsOperatorModel, OperatorDialog>(
-	KindPaths.operator,
-	OperatorDialog(),
-	AgentDataProviders::getOperator
+    KindPaths.operator,
+    { OperatorDialog() },
+    AgentDataProviders::getOperator
 )

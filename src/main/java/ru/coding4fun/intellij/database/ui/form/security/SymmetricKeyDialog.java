@@ -3,6 +3,7 @@ package ru.coding4fun.intellij.database.ui.form.security;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function2;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase;
 import ru.coding4fun.intellij.database.generation.security.SymmetricKeyGenerator;
 import ru.coding4fun.intellij.database.model.common.BasicIdentity;
@@ -140,5 +141,11 @@ public class SymmetricKeyDialog extends JDialog implements ModelDialog<MsSymmetr
 	@Override
 	public String getDialogId() {
 		return "SymmetricKeyDialog";
+	}
+
+	@Nullable
+	@Override
+	public String getModelHelpId() {
+		return "ru.coding4fun.intellij.database.help.security.symmetric.key";
 	}
 }

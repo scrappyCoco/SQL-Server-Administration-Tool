@@ -1,24 +1,30 @@
-DECLARE @ServerPrincipalId INT = ??serverPrincipalId??;
+DECLARE @USER_TEMPLATE NVARCHAR(MAX) = N'UNION ALL
+SELECT
+  defaultSchema = database_principals.default_schema_name COLLATE DATABASE_DEFAULT,
+  id            = CAST($$DB_ID$$ AS VARCHAR(10)),
+  name          = N''$$DB_NAME$$'',
+  [user]        = database_principals.name COLLATE DATABASE_DEFAULT,
+  isSelected    = CAST(IIF(database_principals.sid IS NOT NULL, 1, 0) AS BIT),
+  principalId   = CAST(server_principals.principal_id AS VARCHAR(10))
+FROM sys.server_principals
+LEFT JOIN [$$DB_NAME$$].sys.database_principals ON database_principals.sid = server_principals.sid
+UNION ALL
+SELECT defaultSchema = NULL,
+       id            = CAST($$DB_ID$$ AS VARCHAR(10)),
+       name          = N''$$DB_NAME$$'',
+       [user]        = NULL,
+       isSelected    = CAST(0 AS BIT),
+       principalId   = N''''
+';
 
 DECLARE @searchQuery NVARCHAR(MAX) = N'';
 
-SELECT @searchQuery += N'UNION ALL
-SELECT
-  defaultSchema = database_principals.default_schema_name COLLATE DATABASE_DEFAULT,
-  id            = CAST(' + CAST(databases.database_id AS NVARCHAR(MAX)) + N' AS VARCHAR(10)),
-  name          = ''' + databases.name COLLATE DATABASE_DEFAULT + N''',
-  [user]        = database_principals.name COLLATE DATABASE_DEFAULT,
-  isSelected    = CAST(IIF(database_principals.sid IS NOT NULL, 1, 0) AS BIT)
-FROM sys.server_principals
-LEFT JOIN [' + databases.name + N'].sys.database_principals ON database_principals.sid = server_principals.sid
-WHERE @ServerPrincipalId = server_principals.principal_id
-'
+SELECT @searchQuery += REPLACE(REPLACE(@USER_TEMPLATE,
+    '$$DB_NAME$$', databases.name COLLATE DATABASE_DEFAULT),
+    '$$DB_ID$$', databases.database_id)
 FROM sys.databases
 WHERE databases.state_desc = 'ONLINE';
 
-SET @searchQuery = '
-SELECT *
-FROM (' + STUFF(@searchQuery, 1, LEN(N'UNION ALL'), '') + ') AS Databases
-ORDER BY name;';
+SET @searchQuery = STUFF(@searchQuery, 1, LEN(N'UNION ALL'), '');
 
-EXEC sys.sp_executesql @searchQuery, N'@ServerPrincipalId INT', @ServerPrincipalId = @ServerPrincipalId;
+EXEC sys.sp_executesql @searchQuery;

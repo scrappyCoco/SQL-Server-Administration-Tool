@@ -7,7 +7,7 @@ import ru.coding4fun.intellij.database.model.property.agent.schedule.MsScheduleM
 import ru.coding4fun.intellij.database.ui.form.agent.ScheduleDialog
 
 class NewScheduleAction : NewModelAction<MsScheduleModel, ScheduleDialog>(
-	KindPaths.schedule,
-	ScheduleDialog(),
-	AgentDataProviders::getSchedule
+    KindPaths.schedule,
+    { ScheduleDialog() },
+    AgentDataProviders::getSchedule
 )

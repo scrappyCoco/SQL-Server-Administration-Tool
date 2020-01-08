@@ -3,6 +3,7 @@ package ru.coding4fun.intellij.database.data.property.security.impl
 import com.intellij.openapi.project.Project
 import ru.coding4fun.intellij.database.client.MsClient
 import ru.coding4fun.intellij.database.client.QueryDefinition
+import ru.coding4fun.intellij.database.data.property.DbNull
 import ru.coding4fun.intellij.database.data.property.security.AsymmetricKeyDataProvider
 import ru.coding4fun.intellij.database.message.DataProviderMessages
 import ru.coding4fun.intellij.database.model.common.BasicIdentity
@@ -62,7 +63,7 @@ class AsymmetricKeyDataProviderImpl(project: Project) : MsClient(project), Asymm
         ))
 
         if (objectIds == null) {
-            models[""] = MsAsymmetricKeyModel().also { it.asymKey = ModelModification(null, null) }
+            models[DbNull.value] = MsAsymmetricKeyModel()
         } else {
             queries.add(
                 QueryDefinition(

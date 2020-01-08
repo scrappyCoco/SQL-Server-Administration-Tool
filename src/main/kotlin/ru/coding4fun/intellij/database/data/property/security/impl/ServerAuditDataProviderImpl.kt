@@ -3,6 +3,7 @@ package ru.coding4fun.intellij.database.data.property.security.impl
 import com.intellij.openapi.project.Project
 import ru.coding4fun.intellij.database.client.MsClient
 import ru.coding4fun.intellij.database.client.QueryDefinition
+import ru.coding4fun.intellij.database.data.property.DbNull
 import ru.coding4fun.intellij.database.data.property.security.ServerAuditDataProvider
 import ru.coding4fun.intellij.database.message.DataProviderMessages
 import ru.coding4fun.intellij.database.model.property.security.MsServerAudit
@@ -36,7 +37,8 @@ class ServerAuditDataProviderImpl(project: Project) : MsClient(project), ServerA
 		var audits: List<MsServerAudit> = emptyList()
 
 		if (objectIds == null) {
-			models[""] = MsServerAuditModel().also { it.audit = ModelModification(null, null) }
+			models[DbNull.value] = MsServerAuditModel().also { it.audit = ModelModification(null, null) }
+            successConsumer.accept(models)
 		} else {
 			val queries = listOf(QueryDefinition(
 				"sql/action/property/security/server-audit/ServerAudit.sql",

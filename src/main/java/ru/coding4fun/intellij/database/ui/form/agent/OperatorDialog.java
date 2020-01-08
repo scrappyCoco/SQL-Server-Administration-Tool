@@ -4,6 +4,7 @@ import com.intellij.ui.CheckBoxList;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function2;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase;
 import ru.coding4fun.intellij.database.generation.agent.OperatorGenerator;
 import ru.coding4fun.intellij.database.model.common.BasicIdentity;
@@ -131,5 +132,11 @@ public class OperatorDialog extends JDialog implements ModelDialog<MsOperatorMod
 	@Override
 	public String getDialogId() {
 		return "OperatorDialog";
+	}
+
+	@Nullable
+	@Override
+	public String getModelHelpId() {
+		return "ru.coding4fun.intellij.database.help.agent.operator";
 	}
 }

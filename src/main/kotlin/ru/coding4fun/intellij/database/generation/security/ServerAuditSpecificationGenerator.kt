@@ -39,7 +39,7 @@ object ServerAuditSpecificationGenerator : ScriptGeneratorBase<MsServerAuditSpec
 			.filter { it.isModified }
 			.toList()
 
-		if (!modifications.any()) {
+		if (modifications.any()) {
 			scriptBuilder.addCommaWithNewLineScope()
 				.also { separateScope ->
 					for (actionModification in modifications) {

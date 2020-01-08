@@ -4,6 +4,8 @@ import com.intellij.ui.CheckBoxList;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function2;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import ru.coding4fun.intellij.database.data.property.DbNull;
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase;
 import ru.coding4fun.intellij.database.generation.security.ServerAuditSpecificationGenerator;
 import ru.coding4fun.intellij.database.model.common.BasicIdentity;
@@ -54,7 +56,7 @@ public class ServerAuditSpecificationDialog extends JDialog implements ModelDial
 
 	public MsServerAuditSpecification getNewModel() {
 		return new MsServerAuditSpecification(
-				"",
+				DbNull.value,
 				nameTextField.getText(),
 				CheckBoxGetter.INSTANCE.apply(isEnabledCheckBox),
 				ComboBoxGetter.INSTANCE.getText(auditComboBox)
@@ -119,5 +121,11 @@ public class ServerAuditSpecificationDialog extends JDialog implements ModelDial
 	@Override
 	public String getDialogId() {
 		return "ServerAuditSpecificationDialog";
+	}
+
+	@Nullable
+	@Override
+	public String getModelHelpId() {
+		return "ru.coding4fun.intellij.database.help.security.server.audit.specification";
 	}
 }

@@ -3,6 +3,7 @@ package ru.coding4fun.intellij.database.ui.form.security;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function2;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase;
 import ru.coding4fun.intellij.database.generation.security.CredentialGenerator;
 import ru.coding4fun.intellij.database.model.common.BasicIdentity;
@@ -112,5 +113,11 @@ public class CredentialDialog extends JDialog implements ModelDialog<MsCredentia
 	@Override
 	public String getDialogId() {
 		return "CredentialDialog";
+	}
+
+	@Nullable
+	@Override
+	public String getModelHelpId() {
+		return "ru.coding4fun.intellij.database.help.security.credential";
 	}
 }

@@ -3,6 +3,7 @@ package ru.coding4fun.intellij.database.data.property.security.impl
 import com.intellij.openapi.project.Project
 import ru.coding4fun.intellij.database.client.MsClient
 import ru.coding4fun.intellij.database.client.QueryDefinition
+import ru.coding4fun.intellij.database.data.property.DbNull
 import ru.coding4fun.intellij.database.data.property.security.CertificateDataProvider
 import ru.coding4fun.intellij.database.message.DataProviderMessages
 import ru.coding4fun.intellij.database.model.common.BasicIdentity
@@ -61,7 +62,7 @@ class CertificateDataProviderImpl(project: Project) : MsClient(project), Certifi
         ))
 
         if (objectIds == null) {
-            models[""] = MsCertificateModel().also { it.certificate = ModelModification(null, null) }
+            models[DbNull.value] = MsCertificateModel()
         } else {
             queries.add(
                 QueryDefinition(

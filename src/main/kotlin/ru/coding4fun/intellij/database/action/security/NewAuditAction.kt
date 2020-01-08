@@ -7,7 +7,7 @@ import ru.coding4fun.intellij.database.model.property.security.MsServerAuditMode
 import ru.coding4fun.intellij.database.ui.form.security.ServerAuditDialog
 
 class NewAuditAction : NewModelAction<MsServerAuditModel, ServerAuditDialog>(
-	KindPaths.audits,
-	ServerAuditDialog(),
-	SecurityDataProviders::getServerAuditProvider
+    KindPaths.audits,
+    { ServerAuditDialog() },
+    SecurityDataProviders::getServerAuditProvider
 )

@@ -8,5 +8,6 @@ interface ModelDialog<Model> {
 	var model: Model
 	val isAlterMode: Boolean
 	val scriptGenerator: ScriptGeneratorBase<Model>
+	val modelHelpId: String?
 	fun activateSqlPreview(activateFun: ((sqlPreviewPanel: JPanel, eventPanels: List<JPanel>) -> Unit))
 }

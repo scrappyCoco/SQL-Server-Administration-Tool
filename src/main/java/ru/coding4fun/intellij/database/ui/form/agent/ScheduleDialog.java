@@ -4,6 +4,7 @@ import com.intellij.ui.CheckBoxList;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function2;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase;
 import ru.coding4fun.intellij.database.generation.agent.ScheduleGenerator;
 import ru.coding4fun.intellij.database.model.common.BasicIdentity;
@@ -434,5 +435,11 @@ public class ScheduleDialog extends JDialog implements ModelDialog<MsScheduleMod
 	@Override
 	public String getDialogId() {
 		return "ScheduleDialog";
+	}
+
+	@Nullable
+	@Override
+	public String getModelHelpId() {
+		return "ru.coding4fun.intellij.database.help.agent.schedule";
 	}
 }

@@ -4,6 +4,8 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function2;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import ru.coding4fun.intellij.database.data.property.DbNull;
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase;
 import ru.coding4fun.intellij.database.generation.security.AsymmetricKeyGenerator;
 import ru.coding4fun.intellij.database.model.common.BasicIdentity;
@@ -112,7 +114,7 @@ public class AsymmetricKeyDialog extends JDialog implements ModelDialog<MsAsymme
 	@Contract(" -> new")
 	private MsAsymmetricKey getNewModel() {
 		return new MsAsymmetricKey(
-				"",
+				DbNull.value,
 				nameTextField.getText(),
 				TextFieldGetter.INSTANCE.getText(authorizationTextField),
 				TextFieldGetter.INSTANCE.getText(fileTextField),
@@ -169,9 +171,7 @@ public class AsymmetricKeyDialog extends JDialog implements ModelDialog<MsAsymme
 			setOriginalModel(asymmetricKey);
 			algorithm = asymmetricKey.getAlgorithm();
 			creationDisposition = asymmetricKey.getCreationDisposition();
-			dbComboBox.setEditable(false);
 			setTitle("Alter Asymmetric Key " + asymmetricKey.getName());
-			DialogUtilsKt.disableAll(contentPane);
 		} else {
 			setTitle("Create Asymmetric Key");
 		}
@@ -210,5 +210,11 @@ public class AsymmetricKeyDialog extends JDialog implements ModelDialog<MsAsymme
 	@Override
 	public String getDialogId() {
 		return "AsymmetricKeyDialog";
+	}
+
+	@Nullable
+	@Override
+	public String getModelHelpId() {
+		return "ru.coding4fun.intellij.database.help.security.asymmetric.key";
 	}
 }

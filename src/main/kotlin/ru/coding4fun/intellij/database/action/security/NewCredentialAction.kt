@@ -7,7 +7,7 @@ import ru.coding4fun.intellij.database.model.property.security.MsCredentialModel
 import ru.coding4fun.intellij.database.ui.form.security.CredentialDialog
 
 class NewCredentialAction : NewModelAction<MsCredentialModel, CredentialDialog>(
-	KindPaths.credential,
-	CredentialDialog(),
-	SecurityDataProviders::getCredential
+    KindPaths.credential,
+    { CredentialDialog() },
+    SecurityDataProviders::getCredential
 )

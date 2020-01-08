@@ -31,7 +31,7 @@ object AsymmetricKeyGenerator :
 			asymKey.assembly?.isNotBlank() == true ->
 				scriptBuilder.append("  FROM ASSEMBLY = [", asymKey.assembly, "]").appendJbLn()
 			asymKey.provider?.isNotBlank() == true ->
-				scriptBuilder.append("  FROM PROVIDER = [", asymKey.provider, "]").appendJbLn()
+				scriptBuilder.append("  FROM PROVIDER [", asymKey.provider, "]").appendJbLn()
 		}
 
 		val isAlgorithmSet = asymKey.algorithm?.isNotBlank() ?: false

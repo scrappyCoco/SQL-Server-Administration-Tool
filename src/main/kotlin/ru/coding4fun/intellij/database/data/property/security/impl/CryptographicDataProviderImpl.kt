@@ -3,6 +3,7 @@ package ru.coding4fun.intellij.database.data.property.security.impl
 import com.intellij.openapi.project.Project
 import ru.coding4fun.intellij.database.client.MsClient
 import ru.coding4fun.intellij.database.client.QueryDefinition
+import ru.coding4fun.intellij.database.data.property.DbNull
 import ru.coding4fun.intellij.database.data.property.security.CryptographicDataProvider
 import ru.coding4fun.intellij.database.message.DataProviderMessages
 import ru.coding4fun.intellij.database.model.property.security.MsCryptographicProvider
@@ -42,7 +43,7 @@ class CryptographicDataProviderImpl(project: Project) : MsClient(project), Crypt
         var providers: List<MsCryptographicProvider> = emptyList()
 
         if (objectIds == null) {
-            models[""] = MsCryptographicProviderModel().also { it.provider = ModelModification(null, null) }
+            models[DbNull.value] = MsCryptographicProviderModel()
             successConsumer.accept(models)
         } else {
             val queries = listOf(

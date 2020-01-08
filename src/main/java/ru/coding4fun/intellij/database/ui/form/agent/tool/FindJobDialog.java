@@ -3,6 +3,7 @@ package ru.coding4fun.intellij.database.ui.form.agent.tool;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function2;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase;
 import ru.coding4fun.intellij.database.generation.agent.FindJobGenerator;
 import ru.coding4fun.intellij.database.model.tool.MsFindJob;
@@ -56,5 +57,11 @@ public class FindJobDialog extends JDialog implements ModelDialog<MsFindJob> {
 	@Override
 	public String getDialogId() {
 		return "FindJobDialog";
+	}
+
+	@Nullable
+	@Override
+	public String getModelHelpId() {
+		return null;
 	}
 }

@@ -7,7 +7,7 @@ import ru.coding4fun.intellij.database.model.property.security.MsSymmetricKeyMod
 import ru.coding4fun.intellij.database.ui.form.security.SymmetricKeyDialog
 
 class NewSymmetricKeyAction : NewModelAction<MsSymmetricKeyModel, SymmetricKeyDialog>(
-	KindPaths.symmetricKey,
-	SymmetricKeyDialog(),
-	SecurityDataProviders::getSymmetricKey
+    KindPaths.symmetricKey,
+    { SymmetricKeyDialog() },
+    SecurityDataProviders::getSymmetricKey
 )

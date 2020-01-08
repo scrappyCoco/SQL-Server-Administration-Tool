@@ -3,6 +3,7 @@ package ru.coding4fun.intellij.database.ui.form.security;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function2;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase;
 import ru.coding4fun.intellij.database.generation.security.CryptographicProviderGenerator;
 import ru.coding4fun.intellij.database.model.property.security.MsCryptographicProvider;
@@ -83,5 +84,11 @@ public class CryptographicProviderDialog extends JDialog implements ModelDialog<
 	@Override
 	public String getDialogId() {
 		return "CryptographicProviderDialog";
+	}
+
+	@Nullable
+	@Override
+	public String getModelHelpId() {
+		return "ru.coding4fun.intellij.database.help.security.crypto.provider";
 	}
 }

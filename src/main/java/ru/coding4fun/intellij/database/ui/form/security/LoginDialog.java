@@ -7,6 +7,7 @@ import kotlin.jvm.functions.Function2;
 import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase;
 import ru.coding4fun.intellij.database.generation.security.LoginGenerator;
 import ru.coding4fun.intellij.database.generation.security.PrincipalKind;
@@ -347,5 +348,11 @@ public class LoginDialog extends JDialog implements ModelDialog<MsLoginModel> {
 	@Override
 	public String getDialogId() {
 		return "LoginDialog";
+	}
+
+	@Nullable
+	@Override
+	public String getModelHelpId() {
+		return "ru.coding4fun.intellij.database.help.security.login";
 	}
 }

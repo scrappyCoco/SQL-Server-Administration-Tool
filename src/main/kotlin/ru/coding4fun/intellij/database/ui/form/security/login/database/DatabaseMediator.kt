@@ -59,7 +59,7 @@ class DatabaseMediator(
 				it.isChecked = db.isSelected
 				rootNode.add(it)
 			}
-			val roles = rolesOfDbs[db.name]!!
+			val roles = rolesOfDbs[db.name] ?: continue
 
 			var publicNode: CheckedTreeNode? = null
 			var selectedRolesCount = 0

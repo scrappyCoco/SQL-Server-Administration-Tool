@@ -3,6 +3,8 @@ package ru.coding4fun.intellij.database.ui.form.security;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function2;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import ru.coding4fun.intellij.database.data.property.DbNull;
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase;
 import ru.coding4fun.intellij.database.generation.security.CertificateGenerator;
 import ru.coding4fun.intellij.database.model.common.BasicIdentity;
@@ -146,7 +148,7 @@ public class CertificateDialog extends JDialog implements ModelDialog<MsCertific
 		}
 
 		return new MsCertificate(
-				"",
+				DbNull.value,
 				Objects.requireNonNull(TextFieldGetter.INSTANCE.getText(nameTextField)),
 				TextFieldGetter.INSTANCE.getText(authorizationTextField),
 				beginDialogCheckBox.isSelected(),
@@ -224,5 +226,11 @@ public class CertificateDialog extends JDialog implements ModelDialog<MsCertific
 	@Override
 	public String getDialogId() {
 		return "CertificateDialog";
+	}
+
+	@Nullable
+	@Override
+	public String getModelHelpId() {
+		return "ru.coding4fun.intellij.database.help.security.certificate";
 	}
 }
