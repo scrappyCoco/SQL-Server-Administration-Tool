@@ -1,3 +1,19 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.data.property.security.impl
 
 import com.intellij.openapi.project.Project
@@ -16,42 +32,42 @@ import java.util.function.Consumer
 
 class ServerAuditSpecificationDataProviderImpl(project: Project) : MsClient(project),
     ServerAuditSpecificationDataProvider {
-    override fun getModel(objectId: String?, consumer: Consumer<MsServerAuditSpecModel>) {
-        val model = MsServerAuditSpecModel()
-        val queries = arrayListOf(
-            QueryDefinition(
-                "sql/action/property/security/server-audit/ServerAudits.sql",
-                DataProviderMessages.message("security.server.audit.specification.progress.audit"),
-                Consumer { model.defaultServerAudits = it.getObjects() }),
-            QueryDefinition(
-                if (objectId != null)
-                    "sql/action/property/security/server-audit/ServerAuditSpecificationActions.sql"
-                else "sql/action/property/security/server-audit/ServerAuditSpecificationActionsDefault.sql",
-                DataProviderMessages.message("security.server.audit.specification.progress.action"),
-                Consumer { model.actions = it.getObjects() },
-                if (objectId != null) hashMapOf("specId" to objectId) else emptyMap()
-            )
-        )
-
-        if (objectId != null) {
-            queries.add(
-                QueryDefinition(
-                    "sql/action/property/security/server-audit/ServerAuditSpecification.sql",
-                    DataProviderMessages.message("security.server.audit.specification.progress.main"),
-                    Consumer { model.spec = it.getModObject() },
-                    mapOf("specId" to objectId)
-                )
-            )
-        } else {
-            model.spec = ModelModification(null, null)
-        }
-        model.defaultActions = emptyList()
-
-        invokeComposite(
-            DataProviderMessages.message("security.server.audit.specification.progress.task"),
-            queries,
-            Consumer { consumer.accept(model) })
-    }
+//    override fun getModel(objectId: String?, consumer: Consumer<MsServerAuditSpecModel>) {
+//        val model = MsServerAuditSpecModel()
+//        val queries = arrayListOf(
+//            QueryDefinition(
+//                "sql/action/property/security/server-audit/ServerAudits.sql",
+//                DataProviderMessages.message("security.server.audit.specification.progress.audit"),
+//                Consumer { model.defaultServerAudits = it.getObjects() }),
+//            QueryDefinition(
+//                if (objectId != null)
+//                    "sql/action/property/security/server-audit/ServerAuditSpecificationActions.sql"
+//                else "sql/action/property/security/server-audit/ServerAuditSpecificationActionsDefault.sql",
+//                DataProviderMessages.message("security.server.audit.specification.progress.action"),
+//                Consumer { model.actions = it.getObjects() },
+//                if (objectId != null) hashMapOf("specId" to objectId) else emptyMap()
+//            )
+//        )
+//
+//        if (objectId != null) {
+//            queries.add(
+//                QueryDefinition(
+//                    "sql/action/property/security/server-audit/ServerAuditSpecification.sql",
+//                    DataProviderMessages.message("security.server.audit.specification.progress.main"),
+//                    Consumer { model.spec = it.getModObject() },
+//                    mapOf("specId" to objectId)
+//                )
+//            )
+//        } else {
+//            model.spec = ModelModification(null, null)
+//        }
+//        model.defaultActions = emptyList()
+//
+//        invokeComposite(
+//            DataProviderMessages.message("security.server.audit.specification.progress.task"),
+//            queries,
+//            Consumer { consumer.accept(model) })
+//    }
 
     override fun getModels(
         objectIds: Array<String>?,

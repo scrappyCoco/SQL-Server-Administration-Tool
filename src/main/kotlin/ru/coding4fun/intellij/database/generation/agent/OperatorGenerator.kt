@@ -1,3 +1,19 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.generation.agent
 
 
@@ -7,7 +23,9 @@ import ru.coding4fun.intellij.database.extension.appendLnIfAbsent
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase
 import ru.coding4fun.intellij.database.model.property.agent.MsOperator
 import ru.coding4fun.intellij.database.model.property.agent.operator.MsOperatorAlert
+import ru.coding4fun.intellij.database.model.property.agent.operator.MsOperatorJob
 import ru.coding4fun.intellij.database.model.property.agent.operator.MsOperatorModel
+import ru.coding4fun.intellij.database.ui.form.common.Modifications
 
 object OperatorGenerator : ScriptGeneratorBase<MsOperatorModel>() {
 	override fun getCreatePart(model: MsOperatorModel, scriptBuilder: StringBuilder, reverse: Boolean): StringBuilder {
@@ -25,6 +43,8 @@ object OperatorGenerator : ScriptGeneratorBase<MsOperatorModel>() {
 				.append("  @category_name = '", operator.categoryName, "'")
 		}
 		scriptBuilder.append(";")
+
+		modifyJobs(scriptBuilder, model.operator.new!!, model.jobModifications)
 
 		return scriptBuilder
 	}
@@ -61,6 +81,7 @@ object OperatorGenerator : ScriptGeneratorBase<MsOperatorModel>() {
 		}
 
 		modifyAlerts(scriptBuilder, newOperator, model.alertModifications.map { it.new!! }.toList())
+		modifyJobs(scriptBuilder, newOperator, model.jobModifications)
 
 		return scriptBuilder.toString()
 	}
@@ -83,6 +104,19 @@ object OperatorGenerator : ScriptGeneratorBase<MsOperatorModel>() {
 					.append("  @alert_name = N'", alert.name, "',").appendJbLn()
 					.append("  @operator_name = N'", operator.name, "';").appendJbLn()
 			}
+		}
+	}
+
+	private fun modifyJobs(
+		scriptBuilder: StringBuilder,
+		operator: MsOperator,
+		jobs: Modifications<MsOperatorJob>
+	) {
+		for (job in jobs) {
+			scriptBuilder.appendLnIfAbsent()
+				.append("EXEC msdb.dbo.sp_update_job @job_id = '").append(job.new!!.id).appendJbLn("',")
+				.append(" @notify_email_operator_name = ").append(operator.name).appendJbLn(",")
+				.append(" @notify_level_email = ").append(job.new!!.mailNotifyLevel.id).appendJbLn(";")
 		}
 	}
 }

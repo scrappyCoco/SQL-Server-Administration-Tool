@@ -1,6 +1,21 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.ui.form.agent;
 
-import com.intellij.ui.CheckBoxList;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function2;
 import org.jetbrains.annotations.NotNull;
@@ -12,10 +27,12 @@ import ru.coding4fun.intellij.database.model.property.agent.MsOperator;
 import ru.coding4fun.intellij.database.model.property.agent.operator.MsOperatorAlert;
 import ru.coding4fun.intellij.database.model.property.agent.operator.MsOperatorJob;
 import ru.coding4fun.intellij.database.model.property.agent.operator.MsOperatorModel;
-import ru.coding4fun.intellij.database.ui.DialogUtilsKt;
 import ru.coding4fun.intellij.database.ui.JComboBoxUtilKt;
 import ru.coding4fun.intellij.database.ui.form.ModelDialog;
+import ru.coding4fun.intellij.database.ui.form.agent.operator.OperatorJobTableModel;
+import ru.coding4fun.intellij.database.ui.form.common.CheckBoxListModTracker;
 import ru.coding4fun.intellij.database.ui.form.common.ModificationTracker;
+import ru.coding4fun.intellij.database.ui.form.common.TableModificationTracker;
 import ru.coding4fun.intellij.database.ui.form.state.CheckBoxGetter;
 import ru.coding4fun.intellij.database.ui.form.state.ComboBoxGetter;
 import ru.coding4fun.intellij.database.ui.form.state.TextFieldGetter;
@@ -39,7 +56,9 @@ public class OperatorDialog extends JDialog implements ModelDialog<MsOperatorMod
 	private JPanel sqlPreviewPanel;
 	private JPanel generalPanel;
 	private JPanel notificationsPanel;
-	private CheckBoxList<MsOperatorAlert> alertList;
+	private JScrollPane alertScrollPane;
+	private JPanel alertsPanel;
+	private JPanel jobsPanel;
 
 	private ModificationTracker<MsOperatorAlert> alertsModTracker;
 	private ModificationTracker<MsOperatorJob> jobModTracker;
@@ -77,12 +96,12 @@ public class OperatorDialog extends JDialog implements ModelDialog<MsOperatorMod
 	}
 
 	private void bindTab2Notifications() {
-		DialogUtilsKt.disableAll(notificationsPanel);
-//		final OperatorJobTableModel tableModel = new OperatorJobTableModel();
-//		tableModel.setRows(model.jobs);
-//		jobTable.setModel(tableModel);
-//		jobModTracker = new TableModificationTracker<>(tableModel);
-//		alertsModTracker = new CheckBoxListModTracker<>(alertList, model.getAlerts());
+		final OperatorJobTableModel tableModel = new OperatorJobTableModel();
+		tableModel.setRows(model.jobs);
+		jobTable.setModel(tableModel);
+		tableModel.initColumnSettings(jobTable);
+		jobModTracker = new TableModificationTracker<>(tableModel);
+		alertsModTracker = new CheckBoxListModTracker<>(alertScrollPane, model.getAlerts());
 	}
 
 	@Override
