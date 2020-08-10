@@ -1,3 +1,19 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.tree.impl
 
 import com.intellij.openapi.project.Project
@@ -43,6 +59,10 @@ class MsTreeManagerImpl(project: Project) : MsTreeManager, MsClient(project) {
 		MsKind.OPERATOR_FOLDER to Pair(
 			"sql/tree/agent/Operator.sql",
 			DataProviderMessages.message("tree.agent.operator")
+		),
+		MsKind.PROXY_FOLDER to Pair(
+			"sql/tree/agent/Proxy.sql",
+			DataProviderMessages.message("tree.agent.proxy")
 		),
 		MsKind.AGENT_ERROR_LOG_FOLDER to Pair(
 			"sql/tree/agent/ErrorLog.sql",

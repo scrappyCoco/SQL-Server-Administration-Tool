@@ -1,41 +1,60 @@
-DECLARE @tmp_sp_help_alert TABLE
-                           (
-                               id                        INT              NULL,
-                               name                      NVARCHAR(128)    NULL,
-                               event_source              NVARCHAR(100)    NULL,
-                               event_category_id         INT              NULL,
-                               event_id                  INT              NULL,
-                               message_id                INT              NULL,
-                               severity                  INT              NULL,
-                               enabled                   TINYINT          NULL,
-                               delay_between_responses   INT              NULL,
-                               last_occurrence_date      INT              NULL,
-                               last_occurrence_time      INT              NULL,
-                               last_response_date        INT              NULL,
-                               last_response_time        INT              NULL,
-                               notification_message      NVARCHAR(512)    NULL,
-                               include_event_description TINYINT          NULL,
-                               database_name             NVARCHAR(128)    NULL,
-                               event_description_keyword NVARCHAR(100)    NULL,
-                               occurrence_count          INT              NULL,
-                               count_reset_date          INT              NULL,
-                               count_reset_time          INT              NULL,
-                               job_id                    UNIQUEIDENTIFIER NULL,
-                               job_name                  NVARCHAR(128)    NULL,
-                               has_notification          INT              NULL,
-                               flags                     INT              NULL,
-                               performance_condition     NVARCHAR(512)    NULL,
-                               category_name             NVARCHAR(128)    NULL,
-                               wmi_namespace             NVARCHAR(MAX)    NULL,
-                               wmi_query                 NVARCHAR(MAX)    NULL,
-                               type                      INT              NULL
-                           )
-INSERT INTO @tmp_sp_help_alert EXEC msdb.dbo.sp_help_alert
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
+DECLARE @tmp_sp_help_alert TABLE (
+   id                        INT              NULL,
+   name                      NVARCHAR(128)    NULL,
+   event_source              NVARCHAR(100)    NULL,
+   event_category_id         INT              NULL,
+   event_id                  INT              NULL,
+   message_id                INT              NULL,
+   severity                  INT              NULL,
+   enabled                   TINYINT          NULL,
+   delay_between_responses   INT              NULL,
+   last_occurrence_date      INT              NULL,
+   last_occurrence_time      INT              NULL,
+   last_response_date        INT              NULL,
+   last_response_time        INT              NULL,
+   notification_message      NVARCHAR(512)    NULL,
+   include_event_description TINYINT          NULL,
+   database_name             NVARCHAR(128)    NULL,
+   event_description_keyword NVARCHAR(100)    NULL,
+   occurrence_count          INT              NULL,
+   count_reset_date          INT              NULL,
+   count_reset_time          INT              NULL,
+   job_id                    UNIQUEIDENTIFIER NULL,
+   job_name                  NVARCHAR(128)    NULL,
+   has_notification          INT              NULL,
+   flags                     INT              NULL,
+   performance_condition     NVARCHAR(512)    NULL,
+   category_name             NVARCHAR(128)    NULL,
+   wmi_namespace             NVARCHAR(MAX)    NULL,
+   wmi_query                 NVARCHAR(MAX)    NULL,
+   type                      INT              NULL
+);
+
+INSERT INTO @tmp_sp_help_alert
+EXEC msdb.dbo.sp_help_alert;
+
+DECLARE @SQL_SERVER_EVENT VARCHAR(100) = '1';
 
 SELECT id                   = CAST(id AS VARCHAR(10)),
        name                 = name,
-       type                 = CAST(type AS VARCHAR(10)),
+       categoryName         = category_name,
+       type                 = CAST(type AS VARCHAR(100)),
        isEnabled            = CAST(enabled AS BIT),
        -- region Event alert definition
        databaseName         = database_name,
@@ -54,4 +73,23 @@ SELECT id                   = CAST(id AS VARCHAR(10)),
        minutes              = delay_between_responses / 60,
        seconds              = delay_between_responses % 60
        -- endregion
-FROM @tmp_sp_help_alert;
+FROM @tmp_sp_help_alert
+UNION ALL
+SELECT id                   = '-1',
+       name                 = 'My alert',
+       categoryName         = CAST(NULL AS NVARCHAR(MAX)),
+       type                 = @SQL_SERVER_EVENT,
+       isEnabled            = CAST(1 AS BIT),
+       databaseName         = 'master',
+       errorNumber          = CAST(NULL AS NVARCHAR(MAX)),
+       severity             = CAST(NULL AS NVARCHAR(MAX)),
+       messageText          = CAST(NULL AS NVARCHAR(MAX)),
+       performanceCondition = CAST(NULL AS NVARCHAR(MAX)),
+       wmiNamespace         = CAST(NULL AS NVARCHAR(MAX)),
+       wmiQuery             = CAST(NULL AS NVARCHAR(MAX)),
+       jobId                = CAST(NULL AS NVARCHAR(MAX)),
+       jobName              = CAST(NULL AS NVARCHAR(MAX)),
+       includeEmail         = CAST(0 AS BIT),
+       notificationMessage  = CAST(NULL AS NVARCHAR(MAX)),
+       minutes              = 0,
+       seconds              = 0;

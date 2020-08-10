@@ -19,7 +19,7 @@
     <name>SQL Server Administration Tool</name>
     <vendor email="coding4fun@list.ru" url="https://github.com/scrappyCoco/SQL-Server-Administration-Tool">Coding4fun
     </vendor>
-    <version>2020.1.1</version>
+    <version>2020.2.1</version>
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.database</depends>
@@ -39,7 +39,7 @@
         </ul>
     ]]></change-notes>
 
-    <idea-version since-build="201"/>
+    <idea-version since-build="202"/>
 
     <extensions defaultExtensionNs="com.intellij">
         <webHelpProvider implementation="ru.coding4fun.intellij.database.MsWebHelpProvider"/>
@@ -58,6 +58,8 @@
                         serviceImplementation="ru.coding4fun.intellij.database.data.property.agent.impl.ScheduleDataProviderImpl"/>
         <projectService serviceInterface="ru.coding4fun.intellij.database.data.property.agent.AlertDataProvider"
                         serviceImplementation="ru.coding4fun.intellij.database.data.property.agent.impl.AlertDataProviderImpl"/>
+        <projectService serviceInterface="ru.coding4fun.intellij.database.data.property.agent.ProxyDataProvider"
+                        serviceImplementation="ru.coding4fun.intellij.database.data.property.agent.impl.ProxyDataProviderImpl"/>
         <!-- Database Access | Security -->
         <projectService
                 serviceInterface="ru.coding4fun.intellij.database.data.property.security.AsymmetricKeyDataProvider"
@@ -147,6 +149,7 @@
 
                 <!-- Sql Agent | New -->
                 <action class="ru.coding4fun.intellij.database.action.agent.NewJobAction"
+                        icon="AllIcons.RunConfigurations.Application"
                         id="NewJob"
                         text="New Job"
                         popup="true"/>
@@ -156,6 +159,7 @@
                         text="New Operator"
                         popup="true"/>
                 <action class="ru.coding4fun.intellij.database.action.agent.NewScheduleAction"
+                        icon="AllIcons.Actions.Profile"
                         id="NewSchedule"
                         text="New Schedule"
                         popup="true"/>
@@ -163,6 +167,11 @@
                         icon="AllIcons.Actions.Lightning"
                         id="NewAlertAction"
                         text="New Alert"
+                        popup="true"/>
+                <action class="ru.coding4fun.intellij.database.action.agent.NewProxyAction"
+                        icon="AllIcons.Nodes.Property"
+                        id="NewProxy"
+                        text="New Proxy"
                         popup="true"/>
                 <action class="ru.coding4fun.intellij.database.action.agent.NewJobCategoryAction"
                         icon="AllIcons.Nodes.Folder"

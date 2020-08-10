@@ -20,7 +20,7 @@ SELECT id              = CAST(sysjobs.job_id AS VARCHAR(50)),
                IIF(sysjobs.notify_email_operator_id = sysoperators.id, sysjobs.notify_level_email, 0) AS TINYINT),
        operatorId      = CAST(sysoperators.id AS VARCHAR(50))
 FROM msdb.dbo.sysoperators
-         CROSS JOIN msdb.dbo.sysjobs
+CROSS JOIN msdb.dbo.sysjobs
 UNION ALL
 SELECT id              = CAST(sysjobs.job_id AS VARCHAR(50)),
        name            = sysjobs.name,

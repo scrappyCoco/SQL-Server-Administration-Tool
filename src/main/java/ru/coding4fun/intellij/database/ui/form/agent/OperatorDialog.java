@@ -17,9 +17,10 @@
 package ru.coding4fun.intellij.database.ui.form.agent;
 
 import kotlin.Unit;
-import kotlin.jvm.functions.Function2;
+import kotlin.jvm.functions.Function3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.coding4fun.intellij.database.data.property.DbUtils;
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase;
 import ru.coding4fun.intellij.database.generation.agent.OperatorGenerator;
 import ru.coding4fun.intellij.database.model.common.BasicIdentity;
@@ -29,6 +30,7 @@ import ru.coding4fun.intellij.database.model.property.agent.operator.MsOperatorJ
 import ru.coding4fun.intellij.database.model.property.agent.operator.MsOperatorModel;
 import ru.coding4fun.intellij.database.ui.JComboBoxUtilKt;
 import ru.coding4fun.intellij.database.ui.form.ModelDialog;
+import ru.coding4fun.intellij.database.ui.form.MsSqlScriptState;
 import ru.coding4fun.intellij.database.ui.form.agent.operator.OperatorJobTableModel;
 import ru.coding4fun.intellij.database.ui.form.common.CheckBoxListModTracker;
 import ru.coding4fun.intellij.database.ui.form.common.ModificationTracker;
@@ -62,9 +64,11 @@ public class OperatorDialog extends JDialog implements ModelDialog<MsOperatorMod
 
 	private ModificationTracker<MsOperatorAlert> alertsModTracker;
 	private ModificationTracker<MsOperatorJob> jobModTracker;
+	private MsSqlScriptState state;
 
 	public OperatorDialog() {
 		this.setContentPane(contentPane);
+		state = new MsSqlScriptState();
 		registerRules();
 	}
 
@@ -101,24 +105,28 @@ public class OperatorDialog extends JDialog implements ModelDialog<MsOperatorMod
 		jobTable.setModel(tableModel);
 		tableModel.initColumnSettings(jobTable);
 		jobModTracker = new TableModificationTracker<>(tableModel);
+		tableModel.addOnValueChangeAction(modelMod -> {
+			state.invokeUpdate(null);
+			return Unit.INSTANCE;
+		});
 		alertsModTracker = new CheckBoxListModTracker<>(alertScrollPane, model.getAlerts());
 	}
 
 	@Override
 	public MsOperatorModel getModel() {
 		model.operator.setNew(getNewModel());
-		model.setAlertModifications(alertsModTracker.getModifications());
-		model.setJobModifications(jobModTracker.getModifications());
+		model.setAlertModList(alertsModTracker.getModifications());
+		model.setJobModList(jobModTracker.getModifications());
 		return model;
 	}
 
 	private MsOperatorModel model;
 
 	@Override
-	public void setModel(MsOperatorModel model) {
+	public void setModel(@NotNull MsOperatorModel model) {
 		this.model = model;
 		final MsOperator operator = model.operator.getOld();
-		if (operator != null) {
+		if (!DbUtils.defaultId.equals(operator.getId())) {
 			isAlterMode = true;
 			setTitle("Alter Operator " + operator.getName());
 		} else {
@@ -143,8 +151,8 @@ public class OperatorDialog extends JDialog implements ModelDialog<MsOperatorMod
 	}
 
 	@Override
-	public void activateSqlPreview(@NotNull Function2<? super JPanel, ? super List<? extends JPanel>, Unit> activateFun) {
-		activateFun.invoke(sqlPreviewPanel, List.of(generalPanel, notificationsPanel));
+	public void activateSqlPreview(@NotNull Function3<? super JPanel, ? super List<? extends JPanel>, ? super MsSqlScriptState, Unit> activateFun) {
+		activateFun.invoke(sqlPreviewPanel, List.of(generalPanel, notificationsPanel), state);
 	}
 
 	@NotNull

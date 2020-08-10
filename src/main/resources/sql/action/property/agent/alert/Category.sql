@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-package ru.coding4fun.intellij.database.data.property
-
-object DbNull {
-    const val value = "-1"
-}
+SELECT id   = CAST(syscategories.category_id AS VARCHAR(10)),
+       name = syscategories.name
+from msdb.dbo.syscategories
+where category_type = 2

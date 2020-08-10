@@ -1,3 +1,19 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database
 
 import com.intellij.openapi.help.WebHelpProvider
@@ -23,6 +39,7 @@ class MsWebHelpProvider : WebHelpProvider() {
             "ru.coding4fun.intellij.database.help.agent.job" -> "https://docs.microsoft.com/en-US/sql/relational-databases/system-stored-procedures/sp-add-job-transact-sql"
             "ru.coding4fun.intellij.database.help.agent.operator" -> "https://docs.microsoft.com/en-US/sql/relational-databases/system-stored-procedures/sp-add-operator-transact-sql"
             "ru.coding4fun.intellij.database.help.agent.schedule" -> "https://docs.microsoft.com/en-US/sql/relational-databases/system-stored-procedures/sp-add-schedule-transact-sql"
+            "ru.coding4fun.intellij.database.help.agent.proxy" -> "https://docs.microsoft.com/en-US/sql/relational-databases/system-stored-procedures/sp-add-proxy-transact-sql"
             //endregion
 
             else -> null

@@ -1,3 +1,19 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.generation.security
 
 import ru.coding4fun.intellij.database.extension.addCommaWithNewLineScope
@@ -8,10 +24,8 @@ import ru.coding4fun.intellij.database.model.property.security.MsServerAuditSpec
 object ServerAuditSpecificationGenerator : ScriptGeneratorBase<MsServerAuditSpecModel>() {
 	override fun getCreatePart(
 		model: MsServerAuditSpecModel,
-		scriptBuilder: StringBuilder,
-		reverse: Boolean
+		scriptBuilder: StringBuilder
 	): StringBuilder {
-		if (reverse) model.spec.reverse()
 		fill(model, scriptBuilder, true)
 		return scriptBuilder
 	}
@@ -27,7 +41,7 @@ object ServerAuditSpecificationGenerator : ScriptGeneratorBase<MsServerAuditSpec
 			scriptBuilder.append("ALTER ")
 		}
 
-		val specification = (if (isCreateMode) model.spec.new else model.spec.new)!!
+		val specification = model.spec.new ?: model.spec.old
 
 		scriptBuilder.append("SERVER AUDIT SPECIFICATION ")
 		scriptBuilder.append("[", specification.name, "]")
@@ -35,18 +49,16 @@ object ServerAuditSpecificationGenerator : ScriptGeneratorBase<MsServerAuditSpec
 		scriptBuilder.append("FOR SERVER AUDIT [", specification.auditName, "]")
 
 
-		val modifications = model.actions
-			.filter { it.isModified }
-			.toList()
+		val mods = model.actions
 
-		if (modifications.any()) {
+		if (mods.any()) {
 			scriptBuilder.addCommaWithNewLineScope()
 				.also { separateScope ->
-					for (actionModification in modifications) {
-						separateScope.invokeIf(actionModification.old?.isSelected == true) {
-							scriptBuilder.append("DROP ")
+					for (actionModification in mods) {
+						separateScope.invokeIf(actionModification.old.isSelected) {
+							scriptBuilder.append(" DROP")
 						}.invokeElse {
-							scriptBuilder.append("ADD ")
+							scriptBuilder.append(" ADD")
 						}
 
 						scriptBuilder.append(" (", actionModification.new!!.name, ")")
@@ -69,7 +81,7 @@ object ServerAuditSpecificationGenerator : ScriptGeneratorBase<MsServerAuditSpec
 		model: MsServerAuditSpecModel,
 		scriptBuilder: StringBuilder
 	): StringBuilder {
-		return scriptBuilder.append("DROP SERVER AUDIT SPECIFICATION [", model.spec.old!!.name, "]")
+		return scriptBuilder.append("DROP SERVER AUDIT SPECIFICATION [", model.spec.old.name, "]")
 	}
 
 	override fun getAlterPart(model: MsServerAuditSpecModel): String? {

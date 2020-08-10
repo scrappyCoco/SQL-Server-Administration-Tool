@@ -19,47 +19,16 @@ package ru.coding4fun.intellij.database.data.property.security.impl
 import com.intellij.openapi.project.Project
 import ru.coding4fun.intellij.database.client.MsClient
 import ru.coding4fun.intellij.database.client.QueryDefinition
-import ru.coding4fun.intellij.database.data.property.DbNull
+import ru.coding4fun.intellij.database.data.property.DbUtils
 import ru.coding4fun.intellij.database.data.property.security.CredentialDataProvider
 import ru.coding4fun.intellij.database.message.DataProviderMessages
 import ru.coding4fun.intellij.database.model.common.BasicIdentity
 import ru.coding4fun.intellij.database.model.property.security.MsCredential
 import ru.coding4fun.intellij.database.model.property.security.MsCredentialModel
-import ru.coding4fun.intellij.database.ui.form.common.ModelModification
+import ru.coding4fun.intellij.database.ui.form.common.toMod
 import java.util.function.Consumer
 
 class CredentialDataProviderImpl(project: Project) : MsClient(project), CredentialDataProvider {
-//    override fun getModel(objectId: String?, consumer: Consumer<MsCredentialModel>) {
-//        val model = MsCredentialModel()
-//
-//        val queries = arrayListOf<QueryDefinition>()
-//        if (objectId != null) {
-//            queries.add(
-//                QueryDefinition(
-//                    "sql/action/property/security/Credential.sql",
-//                    DataProviderMessages.message("security.credential.progress.main"),
-//                    Consumer { model.credential = it.getModObject() },
-//                    hashMapOf("credentialId" to objectId)
-//                )
-//            )
-//        } else {
-//            model.credential = ModelModification(null, null)
-//        }
-//
-//        queries.add(
-//            QueryDefinition(
-//                "sql/tree/security/CryptographicProvider.sql",
-//                DataProviderMessages.message("security.credential.progress.crypto"),
-//                Consumer { model.cryptographicProviders = it.getObjects() },
-//                emptyMap()
-//            )
-//        )
-//        invokeComposite(
-//            DataProviderMessages.message("security.credential.progress.task"),
-//            queries,
-//            Consumer { consumer.accept(model) })
-//    }
-
     override fun getModels(
         objectIds: Array<String>?,
         successConsumer: Consumer<Map<String, MsCredentialModel>>,
@@ -76,20 +45,15 @@ class CredentialDataProviderImpl(project: Project) : MsClient(project), Credenti
                 DataProviderMessages.message("security.credential.progress.crypto"),
                 Consumer { cryptographicProviders = it.getObjects() },
                 emptyMap()
+            ),
+            QueryDefinition(
+                "sql/action/property/security/Credential.sql",
+                DataProviderMessages.message("security.credential.progress.main"),
+                Consumer { credentials = it.getObjects() }
             )
         )
 
-        if (objectIds == null) {
-            models[DbNull.value] = MsCredentialModel()
-        } else {
-            queries.add(
-                QueryDefinition(
-                    "sql/action/property/security/Credential.sql",
-                    DataProviderMessages.message("security.credential.progress.main"),
-                    Consumer { credentials = it.getObjects() }
-                )
-            )
-        }
+        if (objectIds == null) models[DbUtils.defaultId] = MsCredentialModel()
 
         invokeComposite(
             DataProviderMessages.message("security.credential.progress.task"),
@@ -97,7 +61,8 @@ class CredentialDataProviderImpl(project: Project) : MsClient(project), Credenti
             Consumer {
 				val credentialMap = credentials.associateBy { it.id }
 				for (model in models) {
-					model.value.credential = ModelModification(credentialMap[model.key], null)
+                    val credId = model.key
+					model.value.credential = (credentialMap[credId] ?: error("Unable to find credential with id $credId")).toMod()
 					model.value.cryptographicProviders = cryptographicProviders
 				}
 

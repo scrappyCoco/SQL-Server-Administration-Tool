@@ -19,52 +19,16 @@ package ru.coding4fun.intellij.database.data.property.agent.impl
 import com.intellij.openapi.project.Project
 import ru.coding4fun.intellij.database.client.MsClient
 import ru.coding4fun.intellij.database.client.QueryDefinition
-import ru.coding4fun.intellij.database.data.property.DbNull
+import ru.coding4fun.intellij.database.data.property.DbUtils
 import ru.coding4fun.intellij.database.data.property.agent.ScheduleDataProvider
 import ru.coding4fun.intellij.database.message.DataProviderMessages
 import ru.coding4fun.intellij.database.model.property.agent.schedule.MsSchedule
 import ru.coding4fun.intellij.database.model.property.agent.schedule.MsScheduleJob
 import ru.coding4fun.intellij.database.model.property.agent.schedule.MsScheduleModel
-import ru.coding4fun.intellij.database.ui.form.common.ModelModification
+import ru.coding4fun.intellij.database.ui.form.common.toMod
 import java.util.function.Consumer
 
 class ScheduleDataProviderImpl(project: Project) : MsClient(project), ScheduleDataProvider {
-//    override fun getModel(objectId: String?, consumer: Consumer<MsScheduleModel>) {
-//        val composite = MsScheduleModel()
-//        val queries = arrayListOf<QueryDefinition>()
-//
-//        if (objectId == null) {
-//            composite.schedule = ModelModification(null, null)
-//            queries.add(QueryDefinition(
-//                "sql/action/property/agent/schedule/DefaultJobs.sql",
-//                DataProviderMessages.message("agent.schedule.progress.job"),
-//                Consumer { composite.jobs = it.getObjects() }
-//            ))
-//        } else {
-//            queries.add(
-//                QueryDefinition(
-//                    "sql/action/property/agent/schedule/Jobs.sql",
-//                    DataProviderMessages.message("agent.schedule.progress.job"),
-//                    Consumer { composite.jobs = it.getObjects() },
-//                    hashMapOf("scheduleId" to objectId)
-//                )
-//            )
-//
-//            queries.add(
-//                QueryDefinition(
-//                    "sql/action/property/agent/schedule/Schedule.sql",
-//                    DataProviderMessages.message("agent.schedule.progress.schedule"),
-//                    Consumer { composite.schedule = it.getModObject() },
-//                    hashMapOf("scheduleId" to objectId)
-//                )
-//            )
-//        }
-//
-//        invokeComposite(
-//            DataProviderMessages.message("agent.schedule.progress.task"),
-//            queries,
-//            Consumer { consumer.accept(composite) })
-//    }
 
     override fun getModels(
         objectIds: Array<String>?,
@@ -77,7 +41,7 @@ class ScheduleDataProviderImpl(project: Project) : MsClient(project), ScheduleDa
         val models: HashMap<String, MsScheduleModel> =
             objectIds?.associateTo(HashMap(), { it to MsScheduleModel() }) ?: HashMap()
 
-        val queries = arrayListOf<QueryDefinition>(
+        val queries = arrayListOf(
             QueryDefinition(
                 "sql/action/property/agent/schedule/Jobs.sql",
                 DataProviderMessages.message("agent.schedule.progress.job"),
@@ -89,7 +53,7 @@ class ScheduleDataProviderImpl(project: Project) : MsClient(project), ScheduleDa
             )
         )
 
-        if (objectIds == null) models[DbNull.value] = MsScheduleModel()
+        if (objectIds == null) models[DbUtils.defaultId] = MsScheduleModel()
 
         invokeComposite(
             DataProviderMessages.message("agent.schedule.progress.task"),
@@ -99,10 +63,10 @@ class ScheduleDataProviderImpl(project: Project) : MsClient(project), ScheduleDa
                 val scheduleMap = schedules.associateBy { it.id }
 
                 for (modelEntry in models) {
-                    val modelId = modelEntry.key
+                    val scheduleId = modelEntry.key
                     val model = modelEntry.value
-                    model.schedule = ModelModification(scheduleMap[modelId], null)
-                    model.jobs = jobMap[modelId]!!
+                    model.schedule = (scheduleMap[scheduleId] ?: error("Unable to find schedule with id $scheduleId")).toMod()
+                    model.jobs = jobMap[scheduleId] ?: emptyList()
                 }
                 successConsumer.accept(models)
             }, errorConsumer

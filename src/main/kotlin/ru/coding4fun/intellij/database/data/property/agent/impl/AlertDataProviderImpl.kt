@@ -19,7 +19,7 @@ package ru.coding4fun.intellij.database.data.property.agent.impl
 import com.intellij.openapi.project.Project
 import ru.coding4fun.intellij.database.client.MsClient
 import ru.coding4fun.intellij.database.client.QueryDefinition
-import ru.coding4fun.intellij.database.data.property.DbNull
+import ru.coding4fun.intellij.database.data.property.DbUtils
 import ru.coding4fun.intellij.database.data.property.agent.AlertDataProvider
 import ru.coding4fun.intellij.database.data.property.agent.PerformanceCounterManager
 import ru.coding4fun.intellij.database.message.DataProviderMessages
@@ -27,7 +27,8 @@ import ru.coding4fun.intellij.database.model.common.BasicIdentity
 import ru.coding4fun.intellij.database.model.property.agent.alert.MsAlert
 import ru.coding4fun.intellij.database.model.property.agent.alert.MsAlertModel
 import ru.coding4fun.intellij.database.model.property.agent.alert.Operator
-import ru.coding4fun.intellij.database.ui.form.common.ModelModification
+import ru.coding4fun.intellij.database.ui.form.common.toMod
+import ru.coding4fun.intellij.database.ui.form.common.toModList
 import java.util.*
 import java.util.function.Consumer
 import kotlin.collections.HashMap
@@ -84,19 +85,25 @@ class AlertDataProviderImpl(project: Project) : AlertDataProvider, MsClient(proj
         val models: HashMap<String, MsAlertModel> =
             objectIds?.associateTo(HashMap(), { it to MsAlertModel() }) ?: HashMap()
         var databases: List<BasicIdentity> = emptyList()
+        var categories: List<BasicIdentity> = emptyList()
         var operators: List<Operator> = emptyList()
         var jobs: List<BasicIdentity> = emptyList()
         var perfCounterManager: PerformanceCounterManager? = null
         var alerts: List<MsAlert> = arrayListOf()
         val queries: ArrayList<QueryDefinition> = arrayListOf()
 
-        if (objectIds == null) models[DbNull.value] = MsAlertModel()
+        if (objectIds == null) models[DbUtils.defaultId] = MsAlertModel()
 
         queries.addAll(listOf(
             QueryDefinition(
                 "sql/action/property/agent/alert/Database.sql",
                 DataProviderMessages.message("agent.alert.progress.database"),
                 Consumer { databases = it.getObjects() }
+            ),
+            QueryDefinition(
+                "sql/action/property/agent/alert/Category.sql",
+                DataProviderMessages.message("agent.alert.progress.category"),
+                Consumer { categories = it.getObjects() }
             ),
             QueryDefinition(
                 "sql/action/property/agent/alert/Operator.sql",
@@ -119,6 +126,8 @@ class AlertDataProviderImpl(project: Project) : AlertDataProvider, MsClient(proj
             ))
         )
 
+        if (objectIds == null) models[DbUtils.defaultId] = MsAlertModel()
+
         invokeComposite(
             DataProviderMessages.message("agent.alert.progress.task"),
             queries,
@@ -126,12 +135,13 @@ class AlertDataProviderImpl(project: Project) : AlertDataProvider, MsClient(proj
                 val alertMap = alerts.associateBy { it.id }
                 for (modelEntry in models) {
                     val model = modelEntry.value
-                    val modelId = modelEntry.key
+                    val alertId = modelEntry.key
 
                     model.databases = databases
-                    model.operators = operators
+                    model.categories = categories
+                    model.operators = operators.toModList()
                     model.jobs = jobs
-                    model.alert = ModelModification(alertMap[modelId], null)
+                    model.alert = (alertMap[alertId] ?: error("Unable to find alert with id $alertId")).toMod()
                     model.perfCounterManager = perfCounterManager!!
                 }
                 successConsumer.accept(models)

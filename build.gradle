@@ -75,7 +75,3 @@ intellij {
     plugins 'DatabaseTools'
     version '202-EAP-SNAPSHOT'
 }
-
-runIde {
-    ideDirectory "$idePath"
-}

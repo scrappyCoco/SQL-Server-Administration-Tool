@@ -19,6 +19,7 @@ package ru.coding4fun.intellij.database.data.property.agent.impl
 import com.intellij.openapi.project.Project
 import ru.coding4fun.intellij.database.client.MsClient
 import ru.coding4fun.intellij.database.client.QueryDefinition
+import ru.coding4fun.intellij.database.data.property.DbUtils
 import ru.coding4fun.intellij.database.data.property.agent.JobDataProvider
 import ru.coding4fun.intellij.database.message.DataProviderMessages
 import ru.coding4fun.intellij.database.model.common.BasicIdentity
@@ -97,6 +98,7 @@ class JobDataProviderImpl(project: Project) : MsClient(project), JobDataProvider
 		var databases: List<BasicIdentity> = emptyList()
 		var steps: List<MsJobStep> = emptyList()
 		var jobs: List<MsJob> = emptyList()
+		var proxies: List<BasicIdentity> = emptyList()
 
 		val queries = arrayListOf(QueryDefinition(
 			"sql/action/property/agent/job/SubSystem.sql",
@@ -121,25 +123,24 @@ class JobDataProviderImpl(project: Project) : MsClient(project), JobDataProvider
 			"sql/common/Database.sql",
 			DataProviderMessages.message("agent.job.progress.database"),
 			Consumer { databases = it.getObjects() }
+		), QueryDefinition(
+			"sql/action/property/agent/job/Job.sql",
+			DataProviderMessages.message("agent.job.progress.job"),
+			Consumer { jobs = it.getObjects() }
+		), QueryDefinition(
+			"sql/action/property/agent/job/Proxy.sql",
+			DataProviderMessages.message("agent.job.progress.proxy"),
+			Consumer { proxies = it.getObjects() }
 		))
 
 		if (objectIds == null) {
-			models[""] = MsJobModel().also {
-				it.job = ModelModification(null, null)
-			}
+			models[DbUtils.defaultId] = MsJobModel()
 		} else {
 			queries.add(
 				QueryDefinition(
 					"sql/action/property/agent/job/Step.sql",
 					DataProviderMessages.message("agent.job.progress.step"),
 					Consumer { steps = it.getObjects() }
-				)
-			)
-			queries.add(
-				QueryDefinition(
-					"sql/action/property/agent/job/Job.sql",
-					DataProviderMessages.message("agent.job.progress.job"),
-					Consumer { jobs = it.getObjects() }
 				)
 			)
 		}
@@ -150,17 +151,21 @@ class JobDataProviderImpl(project: Project) : MsClient(project), JobDataProvider
 				val alertMap = alerts.groupBy { it.jobId }
 				val scheduleMap = schedules.groupBy { it.jobId }
 				val jobMap = jobs.associateBy { it.id }
-				val stepMap = steps.groupBy { it.id }
+				val stepMap = steps.groupBy { it.jobId }
 
 				for (model in models) {
-					model.value.subSystems = subSystems
-					model.value.operators = operators
-					model.value.categories = categories
-					model.value.databases = databases
-					model.value.alerts = alertMap[model.key] ?: emptyList()
-					model.value.schedules = scheduleMap[model.key] ?: emptyList()
-					model.value.job = ModelModification(jobMap[model.key], null)
-					model.value.steps = stepMap[model.key] ?: emptyList()
+					val job = model.value
+					val jobId = model.key
+
+					job.subSystems = subSystems
+					job.operators = operators
+					job.categories = categories
+					job.databases = databases
+					job.proxies = proxies
+					job.alerts = alertMap[jobId] ?: emptyList()
+					job.schedules = scheduleMap[jobId] ?: emptyList()
+					job.job = ModelModification(jobMap[jobId] ?: error("Unable to find job with id $jobId"), null)
+					job.steps = stepMap[jobId] ?: emptyList()
 				}
 				successConsumer.accept(models)
 			}, errorConsumer)

@@ -1,10 +1,26 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.ui.form.security;
 
 import kotlin.Unit;
-import kotlin.jvm.functions.Function2;
+import kotlin.jvm.functions.Function3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.coding4fun.intellij.database.data.property.DbNull;
+import ru.coding4fun.intellij.database.data.property.DbUtils;
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase;
 import ru.coding4fun.intellij.database.generation.security.CertificateGenerator;
 import ru.coding4fun.intellij.database.model.common.BasicIdentity;
@@ -13,6 +29,7 @@ import ru.coding4fun.intellij.database.model.property.security.MsCertificateMode
 import ru.coding4fun.intellij.database.ui.DialogUtilsKt;
 import ru.coding4fun.intellij.database.ui.JComboBoxUtilKt;
 import ru.coding4fun.intellij.database.ui.form.ModelDialog;
+import ru.coding4fun.intellij.database.ui.form.MsSqlScriptState;
 import ru.coding4fun.intellij.database.ui.form.UiDependencyManager;
 import ru.coding4fun.intellij.database.ui.form.UiDependencyRule;
 import ru.coding4fun.intellij.database.ui.form.state.ComboBoxGetter;
@@ -142,13 +159,14 @@ public class CertificateDialog extends JDialog implements ModelDialog<MsCertific
 	}
 
 	public MsCertificate getNewModel() {
+		if (isAlterMode) return null;
 		String password = TextFieldGetter.INSTANCE.getText(encryptedTextField);
 		if (password == null) {
 			password = TextFieldGetter.INSTANCE.getText(passwordTextField);
 		}
 
 		return new MsCertificate(
-				DbNull.value,
+				DbUtils.defaultId,
 				Objects.requireNonNull(TextFieldGetter.INSTANCE.getText(nameTextField)),
 				TextFieldGetter.INSTANCE.getText(authorizationTextField),
 				beginDialogCheckBox.isSelected(),
@@ -193,10 +211,10 @@ public class CertificateDialog extends JDialog implements ModelDialog<MsCertific
 	public void setModel(MsCertificateModel model) {
 		this.model = model;
 		final MsCertificate certificate = model.certificate.getOld();
-		String db = certificate == null ? null : certificate.getDb();
+		isAlterMode = !DbUtils.defaultId.equals(certificate.getId());
+		String db = !isAlterMode ? null : certificate.getDb();
 		JComboBoxUtilKt.synchronizeByName(dbComboBox, model.databases, db, null);
-		if (certificate != null) {
-			isAlterMode = true;
+		if (isAlterMode) {
 			DialogUtilsKt.disableAll(contentPane);
 			setOriginalModel(certificate);
 			setTitle("Alter Certificate " + certificate.getName());
@@ -218,8 +236,8 @@ public class CertificateDialog extends JDialog implements ModelDialog<MsCertific
 	}
 
 	@Override
-	public void activateSqlPreview(@NotNull Function2<? super JPanel, ? super List<? extends JPanel>, Unit> activateFun) {
-		activateFun.invoke(sqlPreviewPanel, List.of(generalPanel));
+	public void activateSqlPreview(@NotNull Function3<? super JPanel, ? super List<? extends JPanel>, ? super MsSqlScriptState, Unit> activateFun) {
+		activateFun.invoke(sqlPreviewPanel, List.of(generalPanel), null);
 	}
 
 	@NotNull

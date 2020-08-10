@@ -16,4 +16,7 @@
 
 SELECT id   = CAST(principal_id AS VARCHAR(10)),
        name = name
-FROM master.sys.server_principals;
+FROM master.sys.server_principals
+UNION ALL
+SELECT id   = '-1',
+       name = 'My Role';

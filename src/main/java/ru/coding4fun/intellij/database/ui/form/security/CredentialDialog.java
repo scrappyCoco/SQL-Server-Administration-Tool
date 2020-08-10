@@ -1,9 +1,26 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.ui.form.security;
 
 import kotlin.Unit;
-import kotlin.jvm.functions.Function2;
+import kotlin.jvm.functions.Function3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.coding4fun.intellij.database.data.property.DbUtils;
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase;
 import ru.coding4fun.intellij.database.generation.security.CredentialGenerator;
 import ru.coding4fun.intellij.database.model.common.BasicIdentity;
@@ -11,6 +28,7 @@ import ru.coding4fun.intellij.database.model.property.security.MsCredential;
 import ru.coding4fun.intellij.database.model.property.security.MsCredentialModel;
 import ru.coding4fun.intellij.database.ui.JComboBoxUtilKt;
 import ru.coding4fun.intellij.database.ui.form.ModelDialog;
+import ru.coding4fun.intellij.database.ui.form.MsSqlScriptState;
 import ru.coding4fun.intellij.database.ui.form.UiDependencyManager;
 import ru.coding4fun.intellij.database.ui.form.UiDependencyRule;
 import ru.coding4fun.intellij.database.ui.form.state.ComboBoxGetter;
@@ -73,17 +91,16 @@ public class CredentialDialog extends JDialog implements ModelDialog<MsCredentia
 		String selectedCryptographicProvider = null;
 
 		final MsCredential credential = model.credential.getOld();
-		if (credential != null) {
-			isAlterMode = true;
-			nameTextField.setText(credential.getName());
-			identityTextField.setText(credential.getIdentityName());
-			selectedCryptographicProvider = credential.getProviderName();
+		nameTextField.setText(credential.getName());
+		identityTextField.setText(credential.getIdentityName());
+		selectedCryptographicProvider = credential.getProviderName();
 
+		if (!DbUtils.defaultId.equals(credential.getId())) {
+			isAlterMode = true;
 			nameTextField.setEnabled(false);
 			credentialNameLabel.setEnabled(false);
 			useEncryptionProviderCheckBox.setEnabled(false);
 			providerComboBox.setEnabled(false);
-
 			setTitle("Alter Credential " + credential.getName());
 		} else {
 			setTitle("Create Credential");
@@ -105,8 +122,8 @@ public class CredentialDialog extends JDialog implements ModelDialog<MsCredentia
 	}
 
 	@Override
-	public void activateSqlPreview(@NotNull Function2<? super JPanel, ? super List<? extends JPanel>, Unit> activateFun) {
-		activateFun.invoke(sqlPreviewPanel, List.of(generalPanel));
+	public void activateSqlPreview(@NotNull Function3<? super JPanel, ? super List<? extends JPanel>, ? super MsSqlScriptState, Unit> activateFun) {
+		activateFun.invoke(sqlPreviewPanel, List.of(generalPanel), null);
 	}
 
 	@NotNull

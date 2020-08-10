@@ -1,3 +1,19 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.model.tree
 
 enum class MsKind(val label: String? = null, val isFolder: Boolean = false) {
@@ -13,7 +29,7 @@ enum class MsKind(val label: String? = null, val isFolder: Boolean = false) {
 	CRYPTOGRAPHIC_PROVIDER_FOLDER("Cryptographic Providers", true),
 	AUDIT_FOLDER("Audits", true),
 	SERVER_AUDIT_SPECIFICATION_FOLDER("Server Audit Specifications", true),
-	AGENT_FOLDER("SQL Server Agent (Preview)", true),
+	AGENT_FOLDER("SQL Server Agent", true),
 	JOB_FOLDER("Jobs", true),
 	JOB("Job"),
 	JOB_CATEGORY,
@@ -23,7 +39,8 @@ enum class MsKind(val label: String? = null, val isFolder: Boolean = false) {
 	OPERATOR_FOLDER("Operators", true),
 	OPERATOR_GROUP_FOLDER(null, true),
 	OPERATOR("Operator"),
-	PROXIES("Proxies"),
+	PROXY("Proxy"),
+	PROXY_FOLDER("Proxies", true),
 	AGENT_ERROR_LOG,
 	AGENT_ERROR_LOG_FOLDER("Error Logs", true),
 	CERTIFICATE_FOLDER("Certificates", true),

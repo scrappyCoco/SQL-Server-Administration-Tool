@@ -1,22 +1,43 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.ui.form.agent;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.CheckBoxList;
 import kotlin.Unit;
-import kotlin.jvm.functions.Function2;
-import org.jetbrains.annotations.Contract;
+import kotlin.jvm.functions.Function3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.coding4fun.intellij.database.data.property.DbUtils;
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase;
 import ru.coding4fun.intellij.database.generation.agent.JobGenerator;
 import ru.coding4fun.intellij.database.model.common.BasicIdentity;
 import ru.coding4fun.intellij.database.model.property.agent.MsNotifyLevel;
-import ru.coding4fun.intellij.database.model.property.agent.job.*;
-import ru.coding4fun.intellij.database.ui.DialogUtilsKt;
+import ru.coding4fun.intellij.database.model.property.agent.MsNotifyLevels;
+import ru.coding4fun.intellij.database.model.property.agent.job.MsAlert;
+import ru.coding4fun.intellij.database.model.property.agent.job.MsJob;
+import ru.coding4fun.intellij.database.model.property.agent.job.MsJobModel;
+import ru.coding4fun.intellij.database.model.property.agent.job.MsSchedule;
 import ru.coding4fun.intellij.database.ui.JComboBoxUtilKt;
 import ru.coding4fun.intellij.database.ui.form.ModelDialog;
+import ru.coding4fun.intellij.database.ui.form.MsSqlScriptState;
 import ru.coding4fun.intellij.database.ui.form.UiDependencyManager;
 import ru.coding4fun.intellij.database.ui.form.UiDependencyRule;
+import ru.coding4fun.intellij.database.ui.form.agent.job.JobStepMediator;
 import ru.coding4fun.intellij.database.ui.form.common.CheckBoxListModTracker;
 import ru.coding4fun.intellij.database.ui.form.common.ModificationTracker;
 import ru.coding4fun.intellij.database.ui.form.state.CheckBoxGetter;
@@ -25,10 +46,11 @@ import ru.coding4fun.intellij.database.ui.form.state.StateChanger;
 import ru.coding4fun.intellij.database.ui.form.state.TextFieldGetter;
 
 import javax.swing.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 public class JobDialog extends JDialog implements ModelDialog<MsJobModel> {
 	private JPanel contentPane;
@@ -74,7 +96,6 @@ public class JobDialog extends JDialog implements ModelDialog<MsJobModel> {
 	private JComboBox<BasicIdentity> deleteActionComboBox;
 	private JComboBox<BasicIdentity> stepDatabaseComboBox;
 	private JTextArea commandTextArea;
-	private JComboBox<BasicIdentity> subSystemComboBox;
 	private CheckBoxList<MsSchedule> scheduleList;
 	private JLabel databaseLabel;
 	private JPanel sqlPreviewPanel;
@@ -88,20 +109,19 @@ public class JobDialog extends JDialog implements ModelDialog<MsJobModel> {
 	private JCheckBox jobHistoryCheckBox;
 	private JCheckBox abortEventCheckBox;
 	private JCheckBox useProxyCheckBox;
-	private JComboBox proxyComboBox;
+	private JComboBox<BasicIdentity> proxyComboBox;
 	private CheckBoxList<MsAlert> alertList;
 	private JScrollPane scheduleScrollPane;
 	private JScrollPane alertScrollPane;
-	private ModificationTracker<MsJobStep> jobStepModTracker;
+	private JPanel stepPanel;
+	private JButton restoreButton;
+	private JobStepMediator jobStepMediator;
 	private ModificationTracker<MsSchedule> scheduleModTracker;
 	private ModificationTracker<MsAlert> alertModTracker;
 	private Project project;
 	private List<UiDependencyRule> uiRules;
+	private MsSqlScriptState scriptState;
 
-	public JobDialog() {
-		this.setContentPane(contentPane);
-		registerRules();
-	}
 
 	private void registerRules() {
 		//region Tab 5 - Notifications.
@@ -142,158 +162,117 @@ public class JobDialog extends JDialog implements ModelDialog<MsJobModel> {
 
 	private MsJobModel model;
 
-	@NotNull
-	@Contract(" -> new")
-	private MsJobStep getSelectedStep() {
-		return new MsJobStep("", "MyStepName",
-				123,
-				ComboBoxGetter.INSTANCE.getText(subSystemComboBox),
-				(short) 0,
-				(short) 0,
-				TextFieldGetter.INSTANCE.getText(commandTextArea),
-				ComboBoxGetter.INSTANCE.getText(stepDatabaseComboBox),
-				ComboBoxGetter.INSTANCE.getText(proxyComboBox),
-				0,//TextFieldGetter.INSTANCE.getInt(retryAttemptsTextField),
-				0,//TextFieldGetter.INSTANCE.getInt(retryIntervalTextField),
-				"",
-				false,
-				false,
-				CheckBoxGetter.INSTANCE.apply(stepHistoryCheckBox),
-				CheckBoxGetter.INSTANCE.apply(jobHistoryCheckBox),
-				CheckBoxGetter.INSTANCE.apply(abortEventCheckBox),
-				false,
-				false);
-	}
+	public JobDialog() {
+		this.setContentPane(contentPane);
 
-	private Unit updateSelectedStep(@NotNull final MsJobStep step) {
-		//1JComboBoxUtilKt.synchronizeByName(subSystemComboBox, dataProvider.getSubSystems(), step.getType(), null);
-		commandTextArea.setText(step.getCommand());
+		stepTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		stepTable.getSelectionModel().addListSelectionListener(listSelectionEvent -> {
+			downButton.setEnabled(stepTable.getSelectedRow() < jobStepMediator.getTableModel().getRows().size() - 1);
+			upButton.setEnabled(stepTable.getSelectedRow() > 0);
+		});
 
-		if ("TSQL".equals(step.getType())) {
-			databaseLabel.setEnabled(true);
-			//JComboBoxUtilKt.synchronizeByName(stepDatabaseComboBox, dataProvider.getDatabases(), step.getDbName(), null);
-		} else {
-			databaseLabel.setEnabled(false);
-			stepDatabaseComboBox.setEnabled(false);
-			stepDatabaseComboBox.removeAllItems();
-		}
+		registerRules();
 
-		JComboBoxUtilKt.synchronizeByName(proxyComboBox, Collections.EMPTY_LIST, step.getProxyName(), useProxyCheckBox);
-		retryAttemptsTextField.setText(Integer.toString(step.getRetryAttempts()));
-		retryIntervalTextField.setText(Integer.toString(step.getRetryInterval()));
-		outputFileTextField.setText(step.getOutputFile());
-		//logTableCheckBox
-		stepHistoryCheckBox.setSelected(step.getStepHistory());
-		jobHistoryCheckBox.setSelected(step.getJobHistory());
-		abortEventCheckBox.setSelected(step.getAbortEvent());
+		addStepButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				jobStepMediator.addStep();
+			}
+		});
 
-		String selectedOutputFile = "-1";
-		if (step.getAppendFile()) {
-			selectedOutputFile = Bits.AppendFile.id;
-		} else if (step.getOverrideFile()) {
-			selectedOutputFile = Bits.OverrideFile.id;
-		}
+		deleteStepButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				jobStepMediator.deleteStep();
+			}
+		});
 
-		String selectedLogTableFile = "-1";
-		if (step.getAppendTable()) {
-			selectedLogTableFile = Bits.AppendTable.id;
-		} else if (step.getOverrideTable()) {
-			selectedLogTableFile = Bits.OverrideTable.id;
-		}
+		upButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				jobStepMediator.upStep();
+			}
+		});
 
-		JComboBoxUtilKt.synchronizeById(outputFileComboBox, getOutputFilesOptions(), selectedOutputFile, null);
-		JComboBoxUtilKt.synchronizeById(logTableComboBox, getLogTableOptions(), selectedLogTableFile, logTableCheckBox);
+		downButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				jobStepMediator.downStep();
+			}
+		});
 
-		return Unit.INSTANCE;
+		restoreButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				jobStepMediator.restoreStep();
+			}
+		});
+
+		scriptState = new MsSqlScriptState();
 	}
 
 	private void bindTab2Steps() {
-		DialogUtilsKt.disableAll(stepsPanel);
-//		final List<MsJobStep> jobSteps = model.steps;
-//		jobStepModificationTracker = new JobStepMediator(stepTable, jobSteps, this::updateSelectedStep, this::getSelectedStep,
-//				subSystemComboBox, stepDatabaseComboBox, commandTextArea, useProxyCheckBox, proxyComboBox,
-//				retryAttemptsTextField, retryIntervalTextField, outputFileTextField, outputFileComboBox,
-//				logTableCheckBox, logTableComboBox, stepHistoryCheckBox, jobHistoryCheckBox, abortEventCheckBox);
-//
-//		final List<BasicIdentity> simpleJobSteps = jobSteps.stream()
-//				.map(it -> new BasicIdentity(it.getId(), it.getName()))
-//				.collect(Collectors.toList());
-//
-//		final String startStep = (oldModel == null) ? null : oldModel.getStartStepId();
-//		JComboBoxUtilKt.synchronizeById(startStepComboBox, simpleJobSteps, startStep, null);
-//		JComboBoxUtilKt.synchronize(outputFileComboBox, getOutputFilesOptions(), null, null);
-//		JComboBoxUtilKt.synchronize(logTableComboBox, getLogTableOptions(), logTableCheckBox, null);
+		jobStepMediator = new JobStepMediator(model, scriptState, stepTable, stepDatabaseComboBox,
+				commandTextArea, useProxyCheckBox, proxyComboBox, retryAttemptsTextField, retryIntervalTextField,
+				outputFileTextField, outputFileComboBox, logTableCheckBox, logTableComboBox, stepHistoryCheckBox,
+				jobHistoryCheckBox, abortEventCheckBox, stepPanel, startStepComboBox);
+
+		jobStepMediator.getTableModel().addTableModelListener(tableModelEvent -> updateButtons());
+
+		updateButtons();
 	}
 
 	private void bindTab3Schedule() {
 		scheduleModTracker = new CheckBoxListModTracker<>(scheduleScrollPane, model.schedules);
 	}
 
-//	private void bindTab5Notification(@NotNull MsJobComposite composite) {
-//		final List<BasicIdentity> jobOperators = composite.operaotrs;
-//
-//		final String eMailOperatorId = oldModel == null ? null : oldModel.getEMailOperatorId();
-//		JComboBoxUtilKt.synchronizeById(eMailComboBox, jobOperators, eMailOperatorId, eMailCheckBox);
-//
-//		final List<BasicIdentity> notifyNames = Arrays.stream(MsNotifyLevel.values())
-//				.map(level -> new BasicIdentity(Byte.toString(level.getId()), level.getWhenDescription()))
-//				.collect(Collectors.toList());
-//
-//		String emailNotifyLevel = oldModel == null || oldModel.getEMailNotifyLevel() == null
-//				? null
-//				: Byte.toString(oldModel.getEMailNotifyLevel().getId());
-//
-//		String eventNotifyLevel = oldModel == null || oldModel.getEventLogLevel() == null
-//				? null
-//				: Byte.toString(oldModel.getEventLogLevel().getId());
-//
-//		String deleteLevel = oldModel == null || oldModel.getDeleteLevel() == null
-//				? null
-//				: Byte.toString(oldModel.getDeleteLevel().getId());
-//
-//		JComboBoxUtilKt.synchronizeById(eMailActionComboBox, notifyNames, emailNotifyLevel, eMailCheckBox);
-//		JComboBoxUtilKt.synchronizeById(eventActionComboBox, notifyNames, eventNotifyLevel, eventCheckBox);
-//		JComboBoxUtilKt.synchronizeById(deleteActionComboBox, notifyNames, deleteLevel, deleteJobCheckBox);
-//	}
-
-	@NotNull
-	private List<BasicIdentity> getOutputFilesOptions() {
-		return List.of(Bits.OverrideFile, Bits.AppendFile)
-				.stream().map(b -> new BasicIdentity(b.id, b.title)).collect(Collectors.toUnmodifiableList());
+	private void updateButtons() {
+		boolean hasAnySteps = jobStepMediator.getModifications().size() > 0;
+		upButton.setEnabled(hasAnySteps);
+		downButton.setEnabled(hasAnySteps);
+		deleteStepButton.setEnabled(hasAnySteps);
+		restoreButton.setEnabled(hasAnySteps);
 	}
 
-	@NotNull
-	private List<BasicIdentity> getLogTableOptions() {
-		return List.of(Bits.OverrideTable, Bits.AppendTable)
-				.stream().map(b -> new BasicIdentity(b.id, b.title)).collect(Collectors.toUnmodifiableList());
+	private void bindTab5Notification(@NotNull MsJobModel model) {
+		final List<BasicIdentity> jobOperators = model.operators;
+
+		final MsJob oldJob = model.job.getOld();
+
+		final String eMailOperatorId = oldJob.getEMailOperatorId();
+		JComboBoxUtilKt.synchronizeById(eMailComboBox, jobOperators, eMailOperatorId, eMailCheckBox);
+
+		final List<BasicIdentity> notifyNames = MsNotifyLevels.INSTANCE.getIdList();
+
+		String emailNotifyLevel = oldJob.getEMailNotifyLevel() == null ? null : oldJob.getEMailNotifyLevel().getId();
+		String eventNotifyLevel = oldJob.getEventLogLevel() == null ? null : oldJob.getEventLogLevel().getId();
+		String deleteLevel = oldJob.getDeleteLevel() == null ? null : oldJob.getDeleteLevel().getId();
+
+		JComboBoxUtilKt.synchronizeById(eMailActionComboBox, notifyNames, emailNotifyLevel, eMailCheckBox);
+		JComboBoxUtilKt.synchronizeById(eventActionComboBox, notifyNames, eventNotifyLevel, eventCheckBox);
+		JComboBoxUtilKt.synchronizeById(deleteActionComboBox, notifyNames, deleteLevel, deleteJobCheckBox);
 	}
 
-	private @Nullable
-	MsNotifyLevel getSelectedLevel(@NotNull JComboBox<BasicIdentity> comboBox) {
-		MsNotifyLevel notifyLevel = null;
-		final String selectedLevelId = ComboBoxGetter.INSTANCE.getSelected(comboBox, BasicIdentity::getId);
-		if (selectedLevelId != null) {
-			notifyLevel = Arrays.stream(MsNotifyLevel.values())
-					.filter(l -> selectedLevelId.equals(Byte.toString(l.getId())))
-					.findFirst()
-					.get();
-		}
-		return notifyLevel;
+	private void bindTab4Alert() {
+		alertModTracker = new CheckBoxListModTracker<>(alertScrollPane, model.alerts);
 	}
-
 
 	public MsJob getNewModel() {
-		return new MsJob("",
-				TextFieldGetter.INSTANCE.getTextOrCompute(nameTextField, () -> "My job name must be specified"),
+		final MsJob jobOld = model.job.getOld();
+		final String stepNumber = ComboBoxGetter.INSTANCE.getSelected(startStepComboBox, BasicIdentity::getId);
+		//final String stepNumber = selectedStepId == null ? null : jobStepMediator.getStepNumber(selectedStepId);
+
+		return new MsJob(jobOld.getId(),
+				TextFieldGetter.INSTANCE.getTextOrCompute(nameTextField, () -> "Job name must be specified"),
 				CheckBoxGetter.INSTANCE.apply(enabledCheckBox),
 				TextFieldGetter.INSTANCE.getText(descriptionTextArea),
-				ComboBoxGetter.INSTANCE.getSelected(startStepComboBox, BasicIdentity::getId),
+				stepNumber,
 				ComboBoxGetter.INSTANCE.getSelected(categoryComboBox, BasicIdentity::getId),
 				ComboBoxGetter.INSTANCE.getSelected(categoryComboBox, BasicIdentity::getName),
 				TextFieldGetter.INSTANCE.getText(ownerTextField),
-				null,
-				null,
-				null,
+				createdTextField.getText(),
+				lastModifiedTextField.getText(),
+				lastExecutedTextField.getText(),
 				getSelectedLevel(eMailActionComboBox),
 				getSelectedLevel(eventActionComboBox),
 				ComboBoxGetter.INSTANCE.getSelected(eMailComboBox, BasicIdentity::getId),
@@ -302,61 +281,13 @@ public class JobDialog extends JDialog implements ModelDialog<MsJobModel> {
 		);
 	}
 
-	private void bindTab4Alert() {
-		alertModTracker = new CheckBoxListModTracker<>(alertScrollPane, model.alerts);
-	}
-
-	@Nullable
-
-	public MsJobParameter getModelParam() {
-		return new MsJobParameter(
-				alertModTracker.getModifications(),
-				scheduleModTracker.getModifications(),
-				jobStepModTracker.getModifications()
-		);
-	}
-
 	@Override
 	public MsJobModel getModel() {
 		model.job.setNew(getNewModel());
 		model.setScheduleMods(scheduleModTracker.getModifications());
 		model.setAlertMods(alertModTracker.getModifications());
+		model.setStepMods(jobStepMediator.getModifications());
 		return model;
-	}
-
-	@Override
-	public void setModel(MsJobModel model) {
-		this.model = model;
-		final MsJob job = model.job.getOld();
-		String currentCategory;
-		if (job != null) {
-			isAlterMode = true;
-			nameTextField.setText(job.getName());
-			ownerTextField.setText(job.getOwnerName());
-			descriptionTextArea.setText(job.getDescription());
-			enabledCheckBox.setSelected(job.isEnabled());
-			createdTextField.setText(job.getDateCreated());
-			lastModifiedTextField.setText(job.getLastModified());
-			lastExecutedTextField.setText(job.getLastExecuted());
-			currentCategory = job.getCategoryName();
-
-			setTitle("Alter Job " + job.getName());
-		} else {
-			currentCategory = null;
-			setTitle("Create Job");
-		}
-
-		final List<BasicIdentity> jobCategories = model.categories;
-		JComboBoxUtilKt.synchronizeByName(categoryComboBox, jobCategories, currentCategory, null);
-
-		bindTab2Steps();
-		bindTab3Schedule();
-		bindTab4Alert();
-//		bindTab5Notification(model);
-
-		for (UiDependencyRule uiRule : uiRules) {
-			uiRule.apply();
-		}
 	}
 
 	private boolean isAlterMode;
@@ -372,8 +303,40 @@ public class JobDialog extends JDialog implements ModelDialog<MsJobModel> {
 	}
 
 	@Override
-	public void activateSqlPreview(@NotNull Function2<? super JPanel, ? super List<? extends JPanel>, Unit> activateFun) {
-		activateFun.invoke(sqlPreviewPanel, List.of(generalPanel, stepsPanel, schedulesPanel, alertsPanel, notificationsPanel));
+	public void setModel(MsJobModel model) {
+		this.model = model;
+		final MsJob job = Objects.requireNonNull(model.job.getOld());
+		String currentCategory = job.getCategoryName();
+		isAlterMode = !DbUtils.defaultId.equals(model.job.getOld().getId());
+		if (isAlterMode) {
+			ownerTextField.setText(job.getOwnerName());
+			createdTextField.setText(job.getDateCreated());
+			lastModifiedTextField.setText(job.getLastModified());
+			lastExecutedTextField.setText(job.getLastExecuted());
+			setTitle("Alter Job " + job.getName());
+		} else {
+			setTitle("Create Job");
+		}
+		nameTextField.setText(job.getName());
+		descriptionTextArea.setText(job.getDescription());
+		enabledCheckBox.setSelected(job.isEnabled());
+
+		final List<BasicIdentity> jobCategories = model.categories;
+		JComboBoxUtilKt.synchronizeByName(categoryComboBox, jobCategories, currentCategory, null);
+
+		bindTab2Steps();
+		bindTab3Schedule();
+		bindTab4Alert();
+		bindTab5Notification(model);
+
+		for (UiDependencyRule uiRule : uiRules) {
+			uiRule.apply();
+		}
+	}
+
+	@Override
+	public void activateSqlPreview(Function3<? super JPanel, ? super List<? extends JPanel>, ? super MsSqlScriptState, Unit> activateFun) {
+		activateFun.invoke(sqlPreviewPanel, List.of(generalPanel, stepsPanel, schedulesPanel, alertsPanel, notificationsPanel), scriptState);
 	}
 
 	@NotNull
@@ -388,22 +351,14 @@ public class JobDialog extends JDialog implements ModelDialog<MsJobModel> {
 		return "ru.coding4fun.intellij.database.help.agent.job";
 	}
 
-	private enum Bits {
-		OverrideFile("0", "Overwrite output file"),
-		AppendFile("2", "Append to output file"),
-		StepHistory("4", null),
-		JobHistory("32", null),
-		AbortEvent("64", null),
-		OverrideTable("8", "Overwrite existing history"),
-		AppendTable("16", "Append to existing history");
-
-
-		public String id;
-		public String title;
-
-		Bits(String id, String title) {
-			this.id = id;
-			this.title = title;
+	private MsNotifyLevel getSelectedLevel(JComboBox<BasicIdentity> comboBox) {
+		MsNotifyLevel notifyLevel = null;
+		final String selectedLevelId = ComboBoxGetter.INSTANCE.getSelected(comboBox, BasicIdentity::getId);
+		if (selectedLevelId != null) {
+			notifyLevel = Arrays.stream(MsNotifyLevel.values())
+					.filter(level -> level.getId().equals(selectedLevelId))
+					.findFirst().get();
 		}
+		return notifyLevel;
 	}
 }

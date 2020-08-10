@@ -22,3 +22,10 @@ SELECT id           = CAST(sysoperators.id AS VARCHAR(10)),
        categoryName = syscategories.name
 FROM msdb.dbo.sysoperators
 LEFT JOIN msdb.dbo.syscategories ON syscategories.category_id = sysoperators.category_id
+UNION ALL
+SELECT id           = '-1',
+       name         = 'My Operator',
+       isEnabled    = CAST(1 AS BIT),
+       eMail        = 'my@mail.com',
+       categoryId   = NULL,
+       categoryName = NULL

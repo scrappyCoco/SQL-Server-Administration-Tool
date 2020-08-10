@@ -1,3 +1,19 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.ui.form.common
 
 import com.intellij.ui.CheckboxTreeListener
@@ -11,24 +27,17 @@ import javax.swing.SwingConstants
 
 class CheckBoxListModTracker<Model>(
 	scrollPane: JScrollPane,
-	itemList: List<Model>,
-	mods: HashMap<String, ModelModification<Model>>
+	itemList: List<Model>
 ) : ModificationTracker<Model>
 		where Model : Copyable<Model>,
 			  Model : Selection {
-	private val modifications: HashMap<String, ModelModification<Model>> = mods
-	override fun getModifications(): List<ModelModification<Model>> = modifications.values.toList()
-
-	constructor(
-		scrollPane: JScrollPane,
-		itemList: List<Model>
-	) : this(scrollPane, itemList, hashMapOf())
+	private val mods: HashMap<String, ModelModification<Model>> = hashMapOf()
+	override fun getModifications(): List<ModelModification<Model>> = mods.values.toList()
 
 	init {
 		val rootNode = CheckedTreeNode("")
 		for (item in itemList) {
-			val isSelected = mods[item.id]?.new?.isSelected
-			rootNode.add(CheckedTreeNode(item).also { it.isChecked = isSelected ?: item.isSelected })
+			rootNode.add(CheckedTreeNode(item).also { it.isChecked = item.isSelected })
 		}
 		SpeedSearchTree(rootNode, this::getText).also {
 			it.addCheckboxTreeListener(object : CheckboxTreeListener {
@@ -47,8 +56,8 @@ class CheckBoxListModTracker<Model>(
 
 	private fun captureChange(node: CheckedTreeNode) {
 		@Suppress("UNCHECKED_CAST") val selectedItem = node.userObject as Model
-		if (modifications.remove(selectedItem.id) == null) {
-			modifications[selectedItem.id] =
+		if (mods.remove(selectedItem.id) == null) {
+			mods[selectedItem.id] =
 				ModelModification(selectedItem, selectedItem.getCopy().also { it.isSelected = node.isChecked })
 		}
 	}

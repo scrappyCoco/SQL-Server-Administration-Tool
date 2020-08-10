@@ -1,10 +1,4 @@
-SELECT id         = CAST(sysoperators.id AS VARCHAR(10)),
-       name       = sysoperators.name,
-       isSelected = CAST(IIF(sysnotifications.alert_id IS NULL, 0, 1) AS BIT),
-       alertId    = CAST(sysnotifications.alert_id AS VARCHAR(100))
-FROM msdb.dbo.sysoperators
-LEFT JOIN msdb.dbo.sysnotifications ON sysnotifications.operator_id = sysoperators.id
-        AND sysnotifications.notification_method = 1 /*
+/*
  * Copyright [2020] Coding4fun
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,4 +14,12 @@ LEFT JOIN msdb.dbo.sysnotifications ON sysnotifications.operator_id = sysoperato
  * limitations under the License.
  */
 
--- e-mail
+DECLARE @EMAIL TINYINT = 1;
+
+SELECT id         = CAST(sysoperators.id AS VARCHAR(10)),
+       name       = sysoperators.name,
+       isSelected = CAST(IIF(sysnotifications.alert_id IS NULL, 0, 1) AS BIT),
+       alertId    = CAST(sysnotifications.alert_id AS VARCHAR(100))
+FROM msdb.dbo.sysoperators
+LEFT JOIN msdb.dbo.sysnotifications ON sysnotifications.operator_id = sysoperators.id
+        AND sysnotifications.notification_method = @EMAIL

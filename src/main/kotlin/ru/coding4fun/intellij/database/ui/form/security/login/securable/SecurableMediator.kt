@@ -1,3 +1,19 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.ui.form.security.login.securable
 
 import com.intellij.ide.ui.search.SearchUtil
@@ -18,14 +34,18 @@ import javax.swing.JTree
 import javax.swing.table.TableCellEditor
 import javax.swing.table.TableCellRenderer
 import javax.swing.tree.DefaultMutableTreeNode
+import javax.swing.tree.TreeNode
 
 class SecurableMediator(
-	private val scrollPane: JScrollPane,
+	scrollPane: JScrollPane,
 	securableAdapter: SecurableAdapter
 ) : ModificationTracker<MsServerPermission> {
 	override fun getModifications(): List<ModelModification<MsServerPermission>> {
-		return permissionMods.values.filter { it.old?.getBitMask() ?: 0 != it.new?.getBitMask() ?: 0 }
+		return permissionMods.values.filter { it.old.getBitMask() != it.new?.getBitMask() ?: 0 }
 	}
+
+	private val table: MyTreeTable
+	private var treeTableSpeedSearch: TreeTableSpeedSearch
 
 	init {
 		val rootNode = DefaultMutableTreeNode()
@@ -49,32 +69,50 @@ class SecurableMediator(
 			}
 		}
 
+		val denyColumn = DenyColumn()
+		val grantPlusColumn = GrantPlusColumn()
+		val grantColumn = GrantColumn()
+
+		val boolColumns = listOf(grantColumn, grantPlusColumn, denyColumn)
+
 		val columns = arrayOf<ColumnInfo<*, *>>(
 			NameColumn(),
 			GrantorColumn(),
-			GrantColumn(),
-			GrantPlusColumn(),
-			DenyColumn()
+			grantColumn,
+			grantPlusColumn,
+			denyColumn
 		)
 
-		val listTreeTableModel = ListTreeTableModelOnColumns(rootNode, columns)
-		MyTreeTable(listTreeTableModel).also {
-			it.setTreeCellRenderer(MyCellRenderer())
-			it.setRootVisible(false)
-			scrollPane.viewport.add(it)
-			treeTableSpeedSearch = TreeTableSpeedSearch(it)
+		val listTreeTableModel = MyListTreeTableModelOnColumns(rootNode, columns)
+
+		table = MyTreeTable(listTreeTableModel)
+		table.setTreeCellRenderer(MyCellRenderer())
+		table.setRootVisible(false)
+		scrollPane.viewport.add(table)
+		treeTableSpeedSearch = TreeTableSpeedSearch(table)
+
+		for (boolColumn in boolColumns) {
+			val column = table.getColumn(boolColumn.name)
+			column.maxWidth = 70
+			column.minWidth = 70
 		}
 	}
 
 	private val permissionMods = hashMapOf<String, ModelModification<MsServerPermission>>()
+
 	private fun handleMod(prev: MsServerPermission?, current: MsServerPermission) {
 		val key = current.id + ":" + current.name
-		val existsMod = permissionMods.get(key)
-		permissionMods[current.id + ":" + current.name] =
-			ModelModification(existsMod?.old ?: prev, current)
+		val existsMod = permissionMods[key]
+		permissionMods[current.id + ":" + current.name] = ModelModification((existsMod?.old ?: prev)!!, current)
 	}
 
-	private var treeTableSpeedSearch: TreeTableSpeedSearch
+	private class MyListTreeTableModelOnColumns(rootNode: TreeNode, columns: Array<ColumnInfo<*, *>>) :
+		ListTreeTableModelOnColumns(rootNode, columns) {
+		override fun setValueAt(aValue: Any?, node: Any?, column: Int) {
+			super.setValueAt(aValue, node, column)
+			nodeChanged(node as TreeNode?)
+		}
+	}
 
 	private class MyTreeTable(treeTableModel: ListTreeTableModelOnColumns) : TreeTable(treeTableModel) {
 		private val columns = treeTableModel.columns
@@ -209,8 +247,7 @@ class SecurableMediator(
 		}
 	}
 
-	private abstract inner class BooleanColumn(name: String) :
-		ColumnInfo<DefaultMutableTreeNode, Boolean>(name) {
+	private abstract inner class BooleanColumn(name: String) : ColumnInfo<DefaultMutableTreeNode, Boolean>(name) {
 		override fun getColumnClass(): Class<*> = Boolean::class.java
 		override fun isCellEditable(item: DefaultMutableTreeNode?): Boolean = true
 		override fun getEditor(item: DefaultMutableTreeNode?): TableCellEditor? = BooleanTableCellEditor()

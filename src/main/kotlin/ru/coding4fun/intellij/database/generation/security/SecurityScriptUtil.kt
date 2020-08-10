@@ -1,22 +1,38 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.generation.security
 
 
 import ru.coding4fun.intellij.database.extension.appendJbLn
 import ru.coding4fun.intellij.database.extension.appendLnIfAbsent
 import ru.coding4fun.intellij.database.model.property.security.login.MsServerPermission
-import ru.coding4fun.intellij.database.ui.form.common.Modifications
+import ru.coding4fun.intellij.database.ui.form.common.ModList
 
 object SecurityScriptUtil {
 	fun appendServerPermissions(
 		scriptBuilder: StringBuilder,
-		serverPermissionModifications: Modifications<MsServerPermission>?,
+		serverPermissionModList: ModList<MsServerPermission>?,
 		memberName: String
 	) {
-		if (serverPermissionModifications == null) {
+		if (serverPermissionModList == null) {
 			return
 		}
 
-		val modificationsOfServerPermissions = serverPermissionModifications
+		val modificationsOfServerPermissions = serverPermissionModList
 			.filter { it.isModified }
 			.toList()
 
@@ -29,7 +45,7 @@ object SecurityScriptUtil {
 		scriptBuilder.appendJbLn()
 
 		for (serverPermissionModification in modificationsOfServerPermissions) {
-			val oldBitMask = serverPermissionModification.old?.getBitMask() ?: -1
+			val oldBitMask = serverPermissionModification.old.getBitMask()
 			val newPermission = serverPermissionModification.new!!
 			val newBitMask = newPermission.getBitMask()
 

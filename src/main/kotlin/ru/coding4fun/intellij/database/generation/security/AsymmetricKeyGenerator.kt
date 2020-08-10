@@ -1,3 +1,19 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.generation.security
 
 import ru.coding4fun.intellij.database.extension.addCommaWithNewLineScope
@@ -11,11 +27,9 @@ object AsymmetricKeyGenerator :
 	ScriptGeneratorBase<MsAsymmetricKeyModel>() {
 	override fun getCreatePart(
 		model: MsAsymmetricKeyModel,
-		scriptBuilder: StringBuilder,
-		reverse: Boolean
+		scriptBuilder: StringBuilder
 	): StringBuilder {
-		if (reverse) model.asymKey.reverse()
-		val asymKey = model.asymKey.new!!
+		val asymKey = model.asymKey.new ?: model.asymKey.old
 		scriptBuilder.append("USE [", model.asymKey.new!!.db, "]").appendGo()
 		scriptBuilder.append("CREATE ASYMMETRIC KEY [", asymKey.name, "]").appendJbLn()
 
@@ -62,7 +76,7 @@ object AsymmetricKeyGenerator :
 		model: MsAsymmetricKeyModel,
 		scriptBuilder: StringBuilder
 	): StringBuilder {
-		val asymKey = model.asymKey.old!!
+		val asymKey = model.asymKey.old
 		return scriptBuilder.appendLnIfAbsent()
 			.append("USE [", asymKey.db, "]").appendGo()
 			.append("DROP ASYMMETRIC KEY ", "[", asymKey.name, "];")

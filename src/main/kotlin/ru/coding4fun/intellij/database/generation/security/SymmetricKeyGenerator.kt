@@ -1,3 +1,19 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.generation.security
 
 import ru.coding4fun.intellij.database.extension.addCommaWithNewLineScope
@@ -10,11 +26,9 @@ import ru.coding4fun.intellij.database.model.property.security.MsSymmetricKeyMod
 object SymmetricKeyGenerator : ScriptGeneratorBase<MsSymmetricKeyModel>() {
 	override fun getCreatePart(
 		model: MsSymmetricKeyModel,
-		scriptBuilder: StringBuilder,
-		reverse: Boolean
+		scriptBuilder: StringBuilder
 	): StringBuilder {
-		if (reverse) model.key.reverse()
-		val key = model.key.new!!
+		val key = model.key.new ?: model.key.old
 		scriptBuilder.append("USE [", key.db, "]").appendGo()
 			.append("CREATE SYMMETRIC KEY [", key.name, "]")
 
@@ -87,7 +101,7 @@ object SymmetricKeyGenerator : ScriptGeneratorBase<MsSymmetricKeyModel>() {
 		model: MsSymmetricKeyModel,
 		scriptBuilder: StringBuilder
 	): StringBuilder {
-		val key = model.key.old!!
+		val key = model.key.old
 		return scriptBuilder.appendLnIfAbsent()
 			.append("USE [", key.db, "]").appendGo()
 			.append("DROP SYMMETRIC KEY [", key.name, "]")

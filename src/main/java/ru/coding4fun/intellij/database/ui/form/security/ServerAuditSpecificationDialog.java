@@ -1,11 +1,27 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.ui.form.security;
 
 import com.intellij.ui.CheckBoxList;
 import kotlin.Unit;
-import kotlin.jvm.functions.Function2;
+import kotlin.jvm.functions.Function3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.coding4fun.intellij.database.data.property.DbNull;
+import ru.coding4fun.intellij.database.data.property.DbUtils;
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase;
 import ru.coding4fun.intellij.database.generation.security.ServerAuditSpecificationGenerator;
 import ru.coding4fun.intellij.database.model.common.BasicIdentity;
@@ -14,6 +30,7 @@ import ru.coding4fun.intellij.database.model.property.security.MsServerAuditSpec
 import ru.coding4fun.intellij.database.model.property.security.MsServerAuditSpecificationAction;
 import ru.coding4fun.intellij.database.ui.JComboBoxUtilKt;
 import ru.coding4fun.intellij.database.ui.form.ModelDialog;
+import ru.coding4fun.intellij.database.ui.form.MsSqlScriptState;
 import ru.coding4fun.intellij.database.ui.form.UiDependencyManager;
 import ru.coding4fun.intellij.database.ui.form.UiDependencyRule;
 import ru.coding4fun.intellij.database.ui.form.common.CheckBoxListModTracker;
@@ -27,8 +44,6 @@ import java.util.List;
 
 public class ServerAuditSpecificationDialog extends JDialog implements ModelDialog<MsServerAuditSpecModel> {
 	private JPanel contentPane;
-	private JButton buttonOK;
-	private JButton buttonCancel;
 	private JComboBox<BasicIdentity> auditComboBox;
 	private JTextField nameTextField;
 	private JLabel nameLabel;
@@ -56,7 +71,7 @@ public class ServerAuditSpecificationDialog extends JDialog implements ModelDial
 
 	public MsServerAuditSpecification getNewModel() {
 		return new MsServerAuditSpecification(
-				DbNull.value,
+				DbUtils.defaultId,
 				nameTextField.getText(),
 				CheckBoxGetter.INSTANCE.apply(isEnabledCheckBox),
 				ComboBoxGetter.INSTANCE.getText(auditComboBox)
@@ -78,22 +93,20 @@ public class ServerAuditSpecificationDialog extends JDialog implements ModelDial
 
 		final List<MsServerAuditSpecificationAction> serverAuditSpecificationActions = model.defaultActions;
 		actionListModificationTracker = new CheckBoxListModTracker<>(actionsScrollPane, serverAuditSpecificationActions);
-		String auditName = null;
 		final MsServerAuditSpecification spec = model.spec.getOld();
 
-		if (spec == null) {
+		if (DbUtils.defaultId.equals(spec.getId())) {
 			setTitle("Create Server Audit Specification");
 		} else {
 			isAlterMode = true;
-			nameTextField.setText(spec.getName());
-			auditName = spec.getAuditName();
-			isEnabledCheckBox.setSelected(spec.isEnabled());
-
 			nameLabel.setEnabled(false);
 			nameTextField.setEnabled(false);
-
 			setTitle("Alter Server Audit Specification " + spec.getName());
 		}
+
+		nameTextField.setText(spec.getName());
+		String auditName = spec.getAuditName();
+		isEnabledCheckBox.setSelected(spec.isEnabled());
 
 		final List<BasicIdentity> serverAudits = model.defaultServerAudits;
 		JComboBoxUtilKt.synchronizeByName(auditComboBox, serverAudits, auditName, auditCheckBox);
@@ -113,8 +126,8 @@ public class ServerAuditSpecificationDialog extends JDialog implements ModelDial
 	}
 
 	@Override
-	public void activateSqlPreview(@NotNull Function2<? super JPanel, ? super List<? extends JPanel>, Unit> activateFun) {
-		activateFun.invoke(sqlPreviewPanel, List.of(generalPanel));
+	public void activateSqlPreview(Function3<? super JPanel, ? super List<? extends JPanel>, ? super MsSqlScriptState, Unit> activateFun) {
+		activateFun.invoke(sqlPreviewPanel, List.of(generalPanel), null);
 	}
 
 	@NotNull

@@ -1,10 +1,26 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.ui.form.security;
 
 import kotlin.Unit;
-import kotlin.jvm.functions.Function2;
+import kotlin.jvm.functions.Function3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ru.coding4fun.intellij.database.data.property.DbNull;
+import ru.coding4fun.intellij.database.data.property.DbUtils;
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase;
 import ru.coding4fun.intellij.database.generation.security.ServerAuditGenerator;
 import ru.coding4fun.intellij.database.model.property.security.MsServerAudit;
@@ -13,6 +29,7 @@ import ru.coding4fun.intellij.database.model.property.security.MsServerAuditMode
 import ru.coding4fun.intellij.database.model.property.security.MsServerAuditOnFailureKind;
 import ru.coding4fun.intellij.database.ui.JComboBoxUtilKt;
 import ru.coding4fun.intellij.database.ui.form.ModelDialog;
+import ru.coding4fun.intellij.database.ui.form.MsSqlScriptState;
 import ru.coding4fun.intellij.database.ui.form.UiDependencyManager;
 import ru.coding4fun.intellij.database.ui.form.UiDependencyRule;
 import ru.coding4fun.intellij.database.ui.form.state.CheckBoxGetter;
@@ -102,9 +119,8 @@ public class ServerAuditDialog extends JDialog implements ModelDialog<MsServerAu
 	}
 
 	private Boolean isNameChanged() {
-		final MsServerAudit old = model.audit.getOld();
-		if (old == null) return false;
-		return !old.getName().equals(TextFieldGetter.INSTANCE.getText(auditNameTextField));
+		if (!isAlterMode) return false;
+		return !model.audit.getOld().getName().equals(TextFieldGetter.INSTANCE.getText(auditNameTextField));
 	}
 
 	private Boolean unlimitedMaxFileIsNotSelected() {
@@ -143,7 +159,7 @@ public class ServerAuditDialog extends JDialog implements ModelDialog<MsServerAu
 
 
 		return new MsServerAudit(
-				DbNull.value,
+				DbUtils.defaultId,
 				TextFieldGetter.INSTANCE.getTextOrCompute(auditNameTextField, () -> ""),
 				true,
 				TextFieldGetter.INSTANCE.getInt(queueDelayTextField),
@@ -190,48 +206,47 @@ public class ServerAuditDialog extends JDialog implements ModelDialog<MsServerAu
 
 		this.model = model;
 		final MsServerAudit audit = model.audit.getOld();
-		if (audit != null) {
+		if (!DbUtils.defaultId.equals(audit.getId())) {
 			isAlterMode = true;
 			setTitle("Alter Server Audit " + audit.getName());
-
-			auditNameTextField.setText(audit.getName());
-			if (audit.getQueueDelay() != null) {
-				queueDelayTextField.setText(audit.getQueueDelay().toString());
-			}
-
-			final MsServerAuditOnFailureKind onAuditLogFailure = audit.getOnAuditLogFailure();
-			if (onAuditLogFailure == MsServerAuditOnFailureKind.SHUTDOWN)
-				shutDownServerRadioButton.setSelected(true);
-			else if (onAuditLogFailure == MsServerAuditOnFailureKind.CONTINUE) continueRadioButton.setSelected(true);
-			else failOperationRadioButton.setSelected(true);
-
-			currentDestination = audit.getAuditDestination();
-			filePathTextField.setText(audit.getFilePath());
-
-			if (audit.getMaxFiles() != null) {
-				maximumOfFilesRadioButton.setSelected(true);
-				numberOfFilesTextField.setText(audit.getMaxFiles().toString());
-			} else {
-				maximumRolloverFilesRadioButton.setSelected(true);
-				if (audit.getMaxRolloverFiles() != null) {
-					numberOfFilesTextField.setText(audit.getMaxRolloverFiles().toString());
-				} else {
-					unlimitedAuditMaxFileLimitCheckBox.setSelected(true);
-				}
-			}
-
-			if (audit.getMaxFiles() == null) {
-				unlimitedMaxFileSizeCheckBox.setSelected(true);
-			} else {
-				maxFileSizeTextField.setText(audit.getMaxFiles().toString());
-			}
-
-			if (audit.getReserveDiskSpace() != null) {
-				reserveDiskSpaceCheckBox.setSelected(audit.getReserveDiskSpace());
-			}
-
 		} else {
 			setTitle("Create Server Audit");
+		}
+
+		auditNameTextField.setText(audit.getName());
+		if (audit.getQueueDelay() != null) {
+			queueDelayTextField.setText(audit.getQueueDelay().toString());
+		}
+
+		final MsServerAuditOnFailureKind onAuditLogFailure = audit.getOnAuditLogFailure();
+		if (onAuditLogFailure == MsServerAuditOnFailureKind.SHUTDOWN)
+			shutDownServerRadioButton.setSelected(true);
+		else if (onAuditLogFailure == MsServerAuditOnFailureKind.CONTINUE) continueRadioButton.setSelected(true);
+		else failOperationRadioButton.setSelected(true);
+
+		currentDestination = audit.getAuditDestination();
+		filePathTextField.setText(audit.getFilePath());
+
+		if (audit.getMaxFiles() != null) {
+			maximumOfFilesRadioButton.setSelected(true);
+			numberOfFilesTextField.setText(audit.getMaxFiles().toString());
+		} else {
+			maximumRolloverFilesRadioButton.setSelected(true);
+			if (audit.getMaxRolloverFiles() != null) {
+				numberOfFilesTextField.setText(audit.getMaxRolloverFiles().toString());
+			} else {
+				unlimitedAuditMaxFileLimitCheckBox.setSelected(true);
+			}
+		}
+
+		if (audit.getMaxFiles() == null) {
+			unlimitedMaxFileSizeCheckBox.setSelected(true);
+		} else {
+			maxFileSizeTextField.setText(audit.getMaxFiles().toString());
+		}
+
+		if (audit.getReserveDiskSpace() != null) {
+			reserveDiskSpaceCheckBox.setSelected(audit.getReserveDiskSpace());
 		}
 
 		JComboBoxUtilKt.synchronize(
@@ -258,8 +273,8 @@ public class ServerAuditDialog extends JDialog implements ModelDialog<MsServerAu
 	}
 
 	@Override
-	public void activateSqlPreview(@NotNull Function2<? super JPanel, ? super List<? extends JPanel>, Unit> activateFun) {
-		activateFun.invoke(sqlPreviewPanel, List.of(generalPanel));
+	public void activateSqlPreview(Function3<? super JPanel, ? super List<? extends JPanel>, ? super MsSqlScriptState, Unit> activateFun) {
+		activateFun.invoke(sqlPreviewPanel, List.of(generalPanel), null);
 	}
 
 	@NotNull

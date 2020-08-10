@@ -19,50 +19,16 @@ package ru.coding4fun.intellij.database.data.property.security.impl
 import com.intellij.openapi.project.Project
 import ru.coding4fun.intellij.database.client.MsClient
 import ru.coding4fun.intellij.database.client.QueryDefinition
-import ru.coding4fun.intellij.database.data.property.DbNull
+import ru.coding4fun.intellij.database.data.property.DbUtils
 import ru.coding4fun.intellij.database.data.property.security.AsymmetricKeyDataProvider
 import ru.coding4fun.intellij.database.message.DataProviderMessages
 import ru.coding4fun.intellij.database.model.common.BasicIdentity
 import ru.coding4fun.intellij.database.model.property.security.MsAsymmetricKey
 import ru.coding4fun.intellij.database.model.property.security.MsAsymmetricKeyModel
-import ru.coding4fun.intellij.database.ui.form.common.ModelModification
+import ru.coding4fun.intellij.database.ui.form.common.toMod
 import java.util.function.Consumer
 
 class AsymmetricKeyDataProviderImpl(project: Project) : MsClient(project), AsymmetricKeyDataProvider {
-//    override fun getModel(objectId: String?, consumer: Consumer<MsAsymmetricKeyModel>) {
-//        val model = MsAsymmetricKeyModel()
-//        model.algorithms = algorithms
-//        model.creationDispositions = creationDispositions
-//
-//        val queries = arrayListOf(QueryDefinition(
-//            "sql/common/Database.sql",
-//            DataProviderMessages.message("security.asymmetric.key.progress.database"),
-//            Consumer { model.databases = it.getObjects() }
-//        ))
-//
-//        if (objectId == null) {
-//            model.asymKey = ModelModification(null, null)
-//        } else {
-//            val idParts = separateId(objectId)
-//            val db = idParts[0]
-//            val id = idParts[1]
-//
-//            queries.add(
-//                QueryDefinition(
-//                    "sql/action/property/security/AsymmetricKey.sql",
-//                    DataProviderMessages.message("security.asymmetric.key.progress.main"),
-//                    Consumer { model.asymKey = it.getModObject() },
-//                    hashMapOf("db" to db, "keyId" to id)
-//                )
-//            )
-//        }
-//
-//        invokeComposite(
-//            DataProviderMessages.message("security.asymmetric.key.progress.task"),
-//            queries,
-//            Consumer { consumer.accept(model) })
-//    }
-
     override fun getModels(
         objectIds: Array<String>?,
         successConsumer: Consumer<Map<String, MsAsymmetricKeyModel>>,
@@ -77,19 +43,13 @@ class AsymmetricKeyDataProviderImpl(project: Project) : MsClient(project), Asymm
             "sql/common/Database.sql",
             DataProviderMessages.message("security.asymmetric.key.progress.database"),
             Consumer { databases = it.getObjects() }
+        ), QueryDefinition(
+            "sql/action/property/security/AsymmetricKey.sql",
+            DataProviderMessages.message("security.asymmetric.key.progress.main"),
+            Consumer { asymmetricKeys = it.getObjects() }
         ))
 
-        if (objectIds == null) {
-            models[DbNull.value] = MsAsymmetricKeyModel()
-        } else {
-            queries.add(
-                QueryDefinition(
-                    "sql/action/property/security/AsymmetricKey.sql",
-                    DataProviderMessages.message("security.asymmetric.key.progress.main"),
-                    Consumer { asymmetricKeys = it.getObjects() }
-                )
-            )
-        }
+        if (objectIds == null) models[DbUtils.defaultId] = MsAsymmetricKeyModel()
 
         invokeComposite(
             DataProviderMessages.message("security.asymmetric.key.progress.task"),
@@ -100,7 +60,8 @@ class AsymmetricKeyDataProviderImpl(project: Project) : MsClient(project), Asymm
                     modelEntry.value.algorithms = algorithms
                     modelEntry.value.creationDispositions = creationDispositions
 					modelEntry.value.databases = databases
-                    modelEntry.value.asymKey = ModelModification(asymmetricKeyMap[modelEntry.key], null)
+                    val keyId = modelEntry.key
+                    modelEntry.value.asymKey = (asymmetricKeyMap[keyId] ?: error("Unable to find asymmetric key with id $keyId")).toMod()
                 }
                 successConsumer.accept(models)
             },

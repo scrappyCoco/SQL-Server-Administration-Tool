@@ -16,8 +16,8 @@
 
 package ru.coding4fun.intellij.database.extension
 
-private const val newLine = "\n"
-private const val commaWithNewLine = ",\n"
+const val newLine = "\n"
+const val commaWithNewLine = ",\n"
 
 fun StringBuilder.appendLnIfAbsent(): StringBuilder {
 	if (this.isEmpty()) return this

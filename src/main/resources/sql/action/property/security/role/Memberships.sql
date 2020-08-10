@@ -24,8 +24,8 @@ FROM (
          FROM master.sys.server_principals AS ChildRoles
                   CROSS JOIN master.sys.server_principals AS ParentRoles
                   LEFT JOIN master.sys.server_role_members
-                            ON server_role_members.member_principal_id = ChildRoles.principal_id
-                                AND server_role_members.role_principal_id = ParentRoles.principal_id
+                                    ON server_role_members.member_principal_id = ChildRoles.principal_id
+                                   AND server_role_members.role_principal_id = ParentRoles.principal_id
          WHERE ChildRoles.type_desc = 'SERVER_ROLE'
            AND ParentRoles.type_desc = 'SERVER_ROLE'
            AND ChildRoles.principal_id <> ParentRoles.principal_id
@@ -36,5 +36,6 @@ FROM (
                 kind        = 'SERVER_ROLE',
                 principalId = '-1'
          FROM master.sys.server_principals
+         WHERE type_desc = 'SERVER_ROLE'
      ) AS Memberships
 ORDER BY principalId, name;

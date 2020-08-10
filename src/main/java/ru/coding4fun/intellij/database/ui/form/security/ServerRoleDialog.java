@@ -1,10 +1,27 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.ui.form.security;
 
 import com.intellij.ui.CheckBoxList;
 import kotlin.Unit;
-import kotlin.jvm.functions.Function2;
+import kotlin.jvm.functions.Function3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.coding4fun.intellij.database.data.property.DbUtils;
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase;
 import ru.coding4fun.intellij.database.generation.security.ServerRoleGenerator;
 import ru.coding4fun.intellij.database.model.common.BuiltinPermission;
@@ -14,6 +31,7 @@ import ru.coding4fun.intellij.database.model.property.security.login.MsServerPer
 import ru.coding4fun.intellij.database.model.property.security.role.RoleMember;
 import ru.coding4fun.intellij.database.model.property.security.role.ServerRole;
 import ru.coding4fun.intellij.database.ui.form.ModelDialog;
+import ru.coding4fun.intellij.database.ui.form.MsSqlScriptState;
 import ru.coding4fun.intellij.database.ui.form.common.CheckBoxListModTracker;
 import ru.coding4fun.intellij.database.ui.form.common.ModificationTracker;
 import ru.coding4fun.intellij.database.ui.form.security.login.securable.SecurableAdapter;
@@ -97,9 +115,9 @@ public class ServerRoleDialog extends JDialog implements ModelDialog<MsServerRol
 	@Override
 	public MsServerRoleModel getModel() {
 		model.role.setNew(getNewModel());
-		model.membershipModifications = membershipListModTracker.getModifications();
-		model.memberModifications = memberListModTracker.getModifications();
-		model.serverPermissionModifications = serverPermissionModTracker.getModifications();
+		model.setMembershipModList(membershipListModTracker.getModifications());
+		model.setMemberModList(memberListModTracker.getModifications());
+		model.setServerPermissionModList(serverPermissionModTracker.getModifications());
 		return model;
 	}
 
@@ -111,13 +129,14 @@ public class ServerRoleDialog extends JDialog implements ModelDialog<MsServerRol
 		membershipListModTracker = new CheckBoxListModTracker<>(membershipScrollPane, model.memberships);
 
 		ServerRole oldModel = model.role.getOld();
-		if (oldModel != null) {
-			isAlterMode = true;
-			final String name = oldModel.getName();
-			nameTextField.setText(name);
+		isAlterMode = !DbUtils.defaultId.equals(oldModel.getId());
+		final String name = oldModel.getName();
+		nameTextField.setText(name);
+		authTextField.setText(oldModel.getAuth());
+
+		if (isAlterMode) {
 			authLabel.setEnabled(false);
 			authTextField.setEnabled(false);
-			authTextField.setText(oldModel.getAuth());
 			setTitle("Alter Server Role " + name);
 		} else {
 			setTitle("Create Server Role");
@@ -140,8 +159,8 @@ public class ServerRoleDialog extends JDialog implements ModelDialog<MsServerRol
 	}
 
 	@Override
-	public void activateSqlPreview(@NotNull Function2<? super JPanel, ? super List<? extends JPanel>, Unit> activateFun) {
-		activateFun.invoke(sqlPreviewPanel, List.of(generalPanel, membersPanel, membershipsPanel, securablesPanel));
+	public void activateSqlPreview(Function3<? super JPanel, ? super List<? extends JPanel>, ? super MsSqlScriptState, Unit> activateFun) {
+		activateFun.invoke(sqlPreviewPanel, List.of(generalPanel, membersPanel, membershipsPanel, securablesPanel), null);
 	}
 
 	@NotNull

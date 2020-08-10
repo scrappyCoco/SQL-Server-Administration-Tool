@@ -29,4 +29,19 @@ SELECT id                   = CAST(sysschedules.schedule_id AS VARCHAR(10)),
        activeEndTime        = sysschedules.active_end_time,
        ownerLoginName       = server_principals.name
 FROM msdb.dbo.sysschedules
-         LEFT JOIN master.sys.server_principals ON server_principals.sid = sysschedules.owner_sid;
+         LEFT JOIN master.sys.server_principals ON server_principals.sid = sysschedules.owner_sid
+UNION ALL
+SELECT id                   = '-1',
+       name                 = 'Every hour',
+       enabled              = CAST(1 AS BIT),
+       freqType             = 4,
+       freqInterval         = 1,
+       freqSubDayType       = 8,
+       freqSubDayInterval   = 1,
+       freqRelativeInterval = 0,
+       freqRecurrenceFactor = 1,
+       activeStartDate      = 20191231,
+       activeEndDate        = 21191231,
+       activeStartTime      = 0,
+       activeEndTime        = 235959,
+       ownerLoginName       = null

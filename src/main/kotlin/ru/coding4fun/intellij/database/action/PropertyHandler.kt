@@ -1,3 +1,19 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.action
 
 import com.intellij.openapi.project.Project
@@ -7,10 +23,7 @@ import ru.coding4fun.intellij.database.data.property.security.SecurityDataProvid
 import ru.coding4fun.intellij.database.model.tree.*
 import ru.coding4fun.intellij.database.ui.displayDialog
 import ru.coding4fun.intellij.database.ui.form.ModelDialog
-import ru.coding4fun.intellij.database.ui.form.agent.AlertDialog
-import ru.coding4fun.intellij.database.ui.form.agent.JobDialog
-import ru.coding4fun.intellij.database.ui.form.agent.OperatorDialog
-import ru.coding4fun.intellij.database.ui.form.agent.ScheduleDialog
+import ru.coding4fun.intellij.database.ui.form.agent.*
 import ru.coding4fun.intellij.database.ui.form.security.*
 import javax.swing.JDialog
 
@@ -54,6 +67,7 @@ object PropertyHandler {
 			selectedLabel.isServerRole -> display(ServerRoleDialog(), SecurityDataProviders.getServerRole(project))
 //			// Sql Server Agent.
 			selectedLabel.isJob -> display(JobDialog(), AgentDataProviders.getJob(project))
+			selectedLabel.isProxy -> display(ProxyDialog(), AgentDataProviders.getProxy(project))
 			selectedLabel.isOperator -> display(OperatorDialog(), AgentDataProviders.getOperator(project))
 			selectedLabel.isSchedule -> display(ScheduleDialog(), AgentDataProviders.getSchedule(project))
 			selectedLabel.isAlert -> display(AlertDialog(), AgentDataProviders.getAlert(project))

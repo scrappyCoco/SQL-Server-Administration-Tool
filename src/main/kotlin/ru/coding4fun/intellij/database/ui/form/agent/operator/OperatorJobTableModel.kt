@@ -16,16 +16,22 @@
 
 package ru.coding4fun.intellij.database.ui.form.agent.operator
 
-import com.intellij.ui.ComboBoxTableCellRenderer
-import com.intellij.util.ui.table.ComboBoxTableCellEditor
+import ru.coding4fun.intellij.database.model.common.BasicIdentity
+import ru.coding4fun.intellij.database.model.common.Identity
 import ru.coding4fun.intellij.database.model.property.agent.MsNotifyLevel
+import ru.coding4fun.intellij.database.model.property.agent.MsNotifyLevels
 import ru.coding4fun.intellij.database.model.property.agent.operator.MsOperatorJob
 import ru.coding4fun.intellij.database.ui.form.common.MutableTableModel
+import ru.coding4fun.intellij.database.ui.form.common.TableCellEditorFactory
 import ru.coding4fun.intellij.database.ui.form.common.TableColumn
 import ru.coding4fun.intellij.database.ui.form.common.TableColumnModel
 
 class OperatorJobTableModel : MutableTableModel<MsOperatorJob>(emptyList(), ColumnModel) {
 	private object ColumnModel : TableColumnModel<MsOperatorJob> {
+		private val notifyLevelEditor = TableCellEditorFactory.createComboBox(
+			MsNotifyLevel.values().map { BasicIdentity(it.id, it.name) }
+		)
+
 		override val columns: Array<TableColumn<MsOperatorJob>>
 			get() = arrayOf(name, email)
 
@@ -39,9 +45,8 @@ class OperatorJobTableModel : MutableTableModel<MsOperatorJob>(emptyList(), Colu
 			"Send to mail",
 			MsNotifyLevel::class.javaObjectType,
 			get = { model -> model.mailNotifyLevel },
-			set = { model, aValue -> model.mailNotifyLevel = aValue as MsNotifyLevel },
-			cellRenderer = ComboBoxTableCellRenderer.INSTANCE,
-			cellEditor = ComboBoxTableCellEditor.INSTANCE
+			set = { model, aValue -> model.mailNotifyLevel = MsNotifyLevels.get(aValue as Identity)!! },
+			cellEditor = notifyLevelEditor
 		)
 	}
 }

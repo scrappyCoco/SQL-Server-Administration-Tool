@@ -1,26 +1,37 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.ui.form
 
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
-import java.awt.event.KeyEvent
-import java.awt.event.KeyListener
 import java.util.*
 import javax.swing.*
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 
 class UiDependencyManager private constructor(rules: List<UiDependencyRule>) {
 	private val triggerComponents: HashMap<JComponent, LinkedList<UiDependencyRule>> = hashMapOf()
-	private val textFieldHandler: TextFieldHandler
 	private val commonActionListener: CommonActionListener
 	private val inAction: HashSet<JComponent> = HashSet()
 
-	private inner class TextFieldHandler : KeyListener {
-		override fun keyTyped(e: KeyEvent?) {}
-		override fun keyPressed(e: KeyEvent?) {}
-
-		override fun keyReleased(e: KeyEvent?) {
-			val sourceComponent = e!!.source as JComponent
-			updateState(sourceComponent)
-		}
+	private inner class TextFieldHandler(private val textField: JTextField) : DocumentListener {
+		override fun changedUpdate(e: DocumentEvent?) = updateState(textField)
+		override fun insertUpdate(p0: DocumentEvent?) = updateState(textField)
+		override fun removeUpdate(p0: DocumentEvent?) = updateState(textField)
 	}
 
 	private inner class CommonActionListener : ActionListener {
@@ -53,7 +64,6 @@ class UiDependencyManager private constructor(rules: List<UiDependencyRule>) {
 	}
 
 	init {
-		textFieldHandler = TextFieldHandler()
 		commonActionListener = CommonActionListener()
 
 		for (rule in rules) {
@@ -68,7 +78,7 @@ class UiDependencyManager private constructor(rules: List<UiDependencyRule>) {
 				rulesOfEventSource.add(rule)
 
 				when (eventSource) {
-					is JTextField -> eventSource.addKeyListener(textFieldHandler)
+					is JTextField -> eventSource.document.addDocumentListener(TextFieldHandler(eventSource))
 					is JRadioButton -> eventSource.addActionListener(commonActionListener)
 					is JCheckBox -> eventSource.addActionListener(commonActionListener)
 					is JComboBox<*> -> eventSource.addActionListener(commonActionListener)

@@ -21,7 +21,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.GuiUtils
 import ru.coding4fun.intellij.database.MsDialogWrapper
 import ru.coding4fun.intellij.database.client.MsConnectionManager
-import ru.coding4fun.intellij.database.data.property.DbNull
+import ru.coding4fun.intellij.database.data.property.DbUtils
 import ru.coding4fun.intellij.database.data.property.security.ModelDataProvider
 import ru.coding4fun.intellij.database.ui.form.ModelDialog
 import ru.coding4fun.intellij.database.ui.form.MsSqlScriptPreview
@@ -44,15 +44,17 @@ fun <Dialog, Model, DataProvider> displayDialog(
             ApplicationManager.getApplication().invokeLater {
                 val msDialog = MsDialogWrapper(project, dialog)
                 dialog.addPropertyChangeListener("title") { msDialog.title = it.newValue.toString() }
-                dialog.model = models[modelId ?: DbNull.value]!!
-                dialog.activateSqlPreview { sqlPanel, eventPanels ->
-                    MsSqlScriptPreview.subscribeForChanges(
+                dialog.model = models[modelId ?: DbUtils.defaultId]!!
+
+                dialog.activateSqlPreview { sqlPanel, eventPanels, scriptState ->
+                     MsSqlScriptPreview.subscribeForChanges(
                         project,
                         MsConnectionManager.dbDataSource!!,
                         dialog,
                         dialog.scriptGenerator,
                         sqlPanel,
-                        eventPanels
+                        eventPanels,
+                         scriptState
                     )
                 }
                 msDialog.show()

@@ -19,7 +19,7 @@ package ru.coding4fun.intellij.database.data.property.agent.impl
 import com.intellij.openapi.project.Project
 import ru.coding4fun.intellij.database.client.MsClient
 import ru.coding4fun.intellij.database.client.QueryDefinition
-import ru.coding4fun.intellij.database.data.property.DbNull
+import ru.coding4fun.intellij.database.data.property.DbUtils
 import ru.coding4fun.intellij.database.data.property.agent.OperatorDataProvider
 import ru.coding4fun.intellij.database.message.DataProviderMessages
 import ru.coding4fun.intellij.database.model.common.BasicIdentity
@@ -27,7 +27,7 @@ import ru.coding4fun.intellij.database.model.property.agent.MsOperator
 import ru.coding4fun.intellij.database.model.property.agent.operator.MsOperatorAlert
 import ru.coding4fun.intellij.database.model.property.agent.operator.MsOperatorJob
 import ru.coding4fun.intellij.database.model.property.agent.operator.MsOperatorModel
-import ru.coding4fun.intellij.database.ui.form.common.ModelModification
+import ru.coding4fun.intellij.database.ui.form.common.toMod
 import java.util.function.Consumer
 
 class OperatorDataProviderImpl(project: Project) : MsClient(project), OperatorDataProvider {
@@ -115,7 +115,7 @@ class OperatorDataProviderImpl(project: Project) : MsClient(project), OperatorDa
             Consumer { operators = it.getObjects() }
         ))
 
-        if (objectIds == null) models[DbNull.value] = MsOperatorModel()
+        if (objectIds == null) models[DbUtils.defaultId] = MsOperatorModel()
 
         invokeComposite(
             DataProviderMessages.message("agent.operator.progress.task"),
@@ -126,12 +126,12 @@ class OperatorDataProviderImpl(project: Project) : MsClient(project), OperatorDa
                 val jobMap = jobs.groupBy { it.operatorId }
 
                 for (modelEntry in models) {
-                    val modelId = modelEntry.key
+                    val operatorId = modelEntry.key
                     val model = modelEntry.value
 
-                    model.operator = ModelModification(operatorMap[modelId], null)
-                    model.alerts = alertMap[modelId] ?: emptyList()
-                    model.jobs = jobMap[modelId] ?: emptyList()
+                    model.operator = (operatorMap[operatorId] ?: error("Unable to find operator with id $operatorId")).toMod()
+                    model.alerts = alertMap[operatorId] ?: emptyList()
+                    model.jobs = jobMap[operatorId] ?: emptyList()
                     model.operatorCategories = operatorCategories
                 }
 

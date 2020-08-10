@@ -1,13 +1,30 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.ui.form.security;
 
 import com.intellij.ui.CheckBoxList;
 import kotlin.Pair;
 import kotlin.Unit;
-import kotlin.jvm.functions.Function2;
+import kotlin.jvm.functions.Function3;
 import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ru.coding4fun.intellij.database.data.property.DbUtils;
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase;
 import ru.coding4fun.intellij.database.generation.security.LoginGenerator;
 import ru.coding4fun.intellij.database.generation.security.PrincipalKind;
@@ -16,10 +33,7 @@ import ru.coding4fun.intellij.database.model.common.BuiltinPermission;
 import ru.coding4fun.intellij.database.model.property.security.login.*;
 import ru.coding4fun.intellij.database.model.property.security.role.RoleMember;
 import ru.coding4fun.intellij.database.ui.JComboBoxUtilKt;
-import ru.coding4fun.intellij.database.ui.form.DialogHelper;
-import ru.coding4fun.intellij.database.ui.form.ModelDialog;
-import ru.coding4fun.intellij.database.ui.form.UiDependencyManager;
-import ru.coding4fun.intellij.database.ui.form.UiDependencyRule;
+import ru.coding4fun.intellij.database.ui.form.*;
 import ru.coding4fun.intellij.database.ui.form.common.CheckBoxListModTracker;
 import ru.coding4fun.intellij.database.ui.form.common.ModificationTracker;
 import ru.coding4fun.intellij.database.ui.form.security.login.database.DatabaseMediator;
@@ -166,15 +180,15 @@ public class LoginDialog extends JDialog implements ModelDialog<MsLoginModel> {
 		this.model = model;
 		final List<BasicIdentity> credentials = model.credentials;
 		final MsLogin oldLogin = model.login.getOld();
-		String modelCredential = oldLogin == null ? null : oldLogin.getCredential();
+		String modelCredential = oldLogin.getCredential();
 		JComboBoxUtilKt.synchronizeByName(credentialComboBox, credentials, modelCredential, mapToCredentialCheckBox);
 
 		final List<BasicIdentity> databases = model.databases;
-		String modelDefaultDatabase = oldLogin == null ? null : oldLogin.getDefaultDatabase();
+		String modelDefaultDatabase = oldLogin.getDefaultDatabase();
 		JComboBoxUtilKt.synchronizeByName(defaultDatabaseComboBox, databases, modelDefaultDatabase, defaultDatabaseCheckBox);
 
 		final List<BasicIdentity> languages = model.languages;
-		String modelDefaultLanguage = oldLogin == null ? null : oldLogin.getDefaultLanguage();
+		String modelDefaultLanguage = oldLogin.getDefaultLanguage();
 		JComboBoxUtilKt.synchronizeByName(defaultLanguageComboBox, languages, modelDefaultLanguage, defaultLanguageCheckBox);
 
 		final List<BasicIdentity> certificates = model.getCertificates();
@@ -183,7 +197,7 @@ public class LoginDialog extends JDialog implements ModelDialog<MsLoginModel> {
 		final List<BasicIdentity> asymmetricKeys = model.getAsymmetricKeys();
 		JComboBoxUtilKt.addAll(asymmetricKeyComboBox, asymmetricKeys);
 
-		if (model.login.getOld() != null) {
+		if (!DbUtils.defaultId.equals(model.login.getOld().getId())) {
 			JComboBoxUtilKt.synchronizeById(certificateComboBox, certificates, getNewModel().getCertificate(), mappedToCertificateRadioButton);
 			JComboBoxUtilKt.synchronizeById(asymmetricKeyComboBox, asymmetricKeys, getNewModel().getAsymmetricKey(), mappedToAsymmetricKeyRadioButton);
 
@@ -197,7 +211,6 @@ public class LoginDialog extends JDialog implements ModelDialog<MsLoginModel> {
 			defaultDatabaseCheckBox.setEnabled(true);
 			defaultLanguageCheckBox.setEnabled(true);
 		}
-
 
 		for (UiDependencyRule rule : rules) {
 			rule.apply();
@@ -300,10 +313,10 @@ public class LoginDialog extends JDialog implements ModelDialog<MsLoginModel> {
 	@Override
 	public MsLoginModel getModel() {
 		model.login.setNew(getNewModel());
-		model.setDbModifications(dbModTracker.getModifications());
-		model.setDbRoleModifications(dbRoleModTracker.getModifications());
-		model.setMemberModifications(serverRoleMembershipModificationTracker.getModifications());
-		model.setServerPermissionModifications(securableModificationTracker.getModifications());
+		model.setDbModList(dbModTracker.getModifications());
+		model.setDbRoleModList(dbRoleModTracker.getModifications());
+		model.setMemberModList(serverRoleMembershipModificationTracker.getModifications());
+		model.setServerPermissionModList(securableModificationTracker.getModifications());
 		return model;
 	}
 
@@ -311,8 +324,9 @@ public class LoginDialog extends JDialog implements ModelDialog<MsLoginModel> {
 	public void setModel(MsLoginModel model) {
 		this.model = model;
 		final MsLogin oldLogin = model.login.getOld();
-		if (oldLogin != null) {
-			isAlterModel = true;
+		isAlterModel = !DbUtils.defaultId.equals(oldLogin.getId());
+
+		if (isAlterModel) {
 			selectRadioButton();
 			loginNameTextField.setText(oldLogin.getName());
 			setTitle("Alter Login " + oldLogin.getName());
@@ -340,8 +354,8 @@ public class LoginDialog extends JDialog implements ModelDialog<MsLoginModel> {
 	}
 
 	@Override
-	public void activateSqlPreview(@NotNull Function2<? super JPanel, ? super List<? extends JPanel>, Unit> activateFun) {
-		activateFun.invoke(sqlPreviewPanel, List.of(generalPanel, serverRolePanel, userMappingPanel, securablePanel));
+	public void activateSqlPreview(Function3<? super JPanel, ? super List<? extends JPanel>, ? super MsSqlScriptState, Unit> activateFun) {
+		activateFun.invoke(sqlPreviewPanel, List.of(generalPanel, serverRolePanel, userMappingPanel, securablePanel), null);
 	}
 
 	@NotNull

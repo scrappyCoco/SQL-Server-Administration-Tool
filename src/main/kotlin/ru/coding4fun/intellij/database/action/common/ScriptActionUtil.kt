@@ -1,3 +1,19 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.coding4fun.intellij.database.action.common
 
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -6,6 +22,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFileFactory
 import com.intellij.sql.dialects.mssql.MsDialect
 import com.intellij.util.ResourceUtil
+import com.jetbrains.rd.util.string.printToString
 import ru.coding4fun.intellij.database.MsNotification
 import ru.coding4fun.intellij.database.action.script.InvokeKind
 import ru.coding4fun.intellij.database.data.property.agent.AgentDataProviders
@@ -15,6 +32,7 @@ import ru.coding4fun.intellij.database.extension.appendLnIfAbsent
 import ru.coding4fun.intellij.database.generation.ScriptGeneratorBase
 import ru.coding4fun.intellij.database.generation.agent.JobGenerator
 import ru.coding4fun.intellij.database.generation.agent.OperatorGenerator
+import ru.coding4fun.intellij.database.generation.agent.ProxyGenerator
 import ru.coding4fun.intellij.database.generation.agent.ScheduleGenerator
 import ru.coding4fun.intellij.database.generation.security.*
 import ru.coding4fun.intellij.database.model.tree.*
@@ -107,7 +125,7 @@ object ScriptActionUtil {
                             for (model in modelsMap.values) {
                                 scripts.addLast(
                                     when (invokeKind) {
-                                        InvokeKind.CREATE -> modelGeneratorBase.getCreateScript(model, true)
+                                        InvokeKind.CREATE -> modelGeneratorBase.getCreateScript(model)
                                         InvokeKind.DROP -> modelGeneratorBase.getDropScript(model)
                                         InvokeKind.DROP_AND_CREATE -> modelGeneratorBase.getDropAndCreateScript(model)
                                     }
@@ -134,7 +152,7 @@ object ScriptActionUtil {
     }
 
     private fun handleException(e: Exception) {
-        MsNotification.error("Unable to create script", e.message ?: "Exception message is empty")
+        MsNotification.error("Unable to create script", e.message + "\n" + e.printToString())
     }
 
     fun openScriptInEditor(
@@ -157,7 +175,8 @@ object ScriptActionUtil {
 			ScriptModelDescriptorImpl(SecurityDataProviders.getServerAuditProvider(project), ServerAuditGenerator) { it.isServerAudit },
 			ScriptModelDescriptorImpl(AgentDataProviders.getOperator(project), OperatorGenerator) { it.isOperator },
 			ScriptModelDescriptorImpl(AgentDataProviders.getSchedule(project), ScheduleGenerator) { it.isSchedule },
-			ScriptModelDescriptorImpl(AgentDataProviders.getJob(project), JobGenerator) { it.isJob }
+			ScriptModelDescriptorImpl(AgentDataProviders.getJob(project), JobGenerator) { it.isJob },
+			ScriptModelDescriptorImpl(AgentDataProviders.getProxy(project), ProxyGenerator) { it.isProxy }
         )
         //@formatter:on
 
@@ -179,7 +198,7 @@ object ScriptActionUtil {
     fun updateByResourceHandler(event: AnActionEvent, actionHandlers: HashMap<MsKind, ResourceActionHandler>) {
         val selectedLabel = event.getData(MsDataKeys.LABELS)!!.first()
         val labelKind = selectedLabel.kind
-        val actionHandler = actionHandlers.get(labelKind)
+        val actionHandler = actionHandlers[labelKind]
         if (actionHandler != null) {
             event.presentation.isVisible = true
             event.presentation.text = actionHandlers[labelKind]!!.text

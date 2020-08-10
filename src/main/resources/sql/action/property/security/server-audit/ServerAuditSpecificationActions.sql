@@ -1,3 +1,19 @@
+/*
+ * Copyright [2020] Coding4fun
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 DECLARE @availableNames TABLE (Name NVARCHAR(200));
 
 DECLARE @currentNames TABLE (
@@ -21,11 +37,12 @@ SELECT id              = AllAvailableActions.Name,
        specificationId = CAST(Specifications.server_specification_id AS VARCHAR(10))
 FROM @availableNames AS AllAvailableActions
 CROSS APPLY sys.server_audit_specifications AS Specifications
-LEFT JOIN @currentNames AS CurrentActions ON CurrentActions.Name = AllAvailableActions.Name
-    AND CurrentActions.SpecificationId = Specifications.server_specification_id
+LEFT JOIN @currentNames AS CurrentActions
+                        ON CurrentActions.Name = AllAvailableActions.Name
+                       AND CurrentActions.SpecificationId = Specifications.server_specification_id
 UNION ALL
 SELECT id              = AllAvailableActions.Name,
        name            = AllAvailableActions.Name,
        isSelected      = CAST(0 AS BIT),
-       specificationId = ''
+       specificationId = '-1'
 FROM @availableNames AS AllAvailableActions;
