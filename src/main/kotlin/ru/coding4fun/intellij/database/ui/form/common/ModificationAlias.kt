@@ -17,10 +17,11 @@
 package ru.coding4fun.intellij.database.ui.form.common
 
 import ru.coding4fun.intellij.database.model.common.Copyable
+import ru.coding4fun.intellij.database.model.common.Identity
 
 typealias OnRowChangeAction<Model> = (modification: ModelModification<Model>) -> Unit
 typealias ModList<Model> = List<ModelModification<Model>>
 
-fun <Model> Model.toMod(): ModelModification<Model> = ModelModification(this, null)
-fun <Model> Model.toModNew(): ModelModification<Model> where Model: Copyable<Model> = ModelModification(this, this.getCopy())
-fun <Model> Collection<Model>.toModList(): ModList<Model> where Model : Any = this.map { it.toMod() }.toList()
+fun <Model> Model.toMod(): ModelModification<Model> where Model : Identity = ModelModification(this, null)
+fun <Model> Model.toModNew(): ModelModification<Model> where Model: Identity, Model: Copyable<Model> = ModelModification(this, this.getCopy())
+fun <Model> Collection<Model>.toModList(): ModList<Model> where Model : Identity = this.map { it.toMod() }.toList()

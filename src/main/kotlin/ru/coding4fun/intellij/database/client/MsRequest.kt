@@ -22,6 +22,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.jetbrains.rd.util.string.printToString
 import ru.coding4fun.intellij.database.MsNotification
+import ru.coding4fun.intellij.database.model.common.Identity
 import ru.coding4fun.intellij.database.model.property.agent.MsNotifyLevel
 import ru.coding4fun.intellij.database.model.property.agent.alert.AlertType
 import ru.coding4fun.intellij.database.model.property.security.MsServerAuditDestination
@@ -108,7 +109,7 @@ class MsRequest(project: Project, sql: String) :
 		return objects
 	}
 
-	inline fun <reified T> getModObject(): ModelModification<T> = getObjects<T>().first().toMod()
+	inline fun <reified T> getModObject(): ModelModification<T> where T: Identity = getObjects<T>().first().toMod()
 
 	companion object {
 		val notifyLevelMapping = MsNotifyLevel.values().associateBy { it.id }

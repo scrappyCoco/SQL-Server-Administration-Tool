@@ -24,13 +24,21 @@ import ru.coding4fun.intellij.database.model.property.security.login.MsLogin
 import ru.coding4fun.intellij.database.model.property.security.login.MsLoginModel
 import ru.coding4fun.intellij.database.model.property.security.role.RoleMember
 import ru.coding4fun.intellij.database.model.tree.MsKind
+import ru.coding4fun.intellij.database.ui.form.common.ModKind
 import ru.coding4fun.intellij.database.ui.form.common.ModList
 import ru.coding4fun.intellij.database.ui.form.common.ModelModification
+import ru.coding4fun.intellij.database.ui.form.common.toModList
 
 object LoginGenerator : ScriptGeneratorBase<MsLoginModel>() {
-	private fun appendDatabases(scriptBuilder: StringBuilder, databaseModList: ModList<MsDatabaseOfLogin>, loginName: String) {
+	private fun appendDatabases(
+		scriptBuilder: StringBuilder,
+		databaseModList: ModList<MsDatabaseOfLogin>,
+		loginName: String,
+		modKind: ModKind
+	) {
 		if (!databaseModList.any()) return
 
+		// TODO: Check to remove it.
 		val modifiedDatabases = databaseModList.filter { it.isModified }.toList()
 
 		if (!modifiedDatabases.any()) return
@@ -39,40 +47,40 @@ object LoginGenerator : ScriptGeneratorBase<MsLoginModel>() {
 		scriptBuilder.append("-- region Databases of ", loginName)
 		scriptBuilder.appendJbLn()
 
-		for (databaseModification in modifiedDatabases) {
-			val newDb = databaseModification.new!!
-			val isUserDrop = !newDb.isSelected && databaseModification.old.isSelected
+		for (dbMod in modifiedDatabases) {
+			val db = dbMod.actual
+			val isUserDrop = !db.isSelected && dbMod.old.isSelected
 
-			scriptBuilder.append("USE [", newDb.name, "]")
+			scriptBuilder.append("USE [", db.name, "]")
 			scriptBuilder.appendJbLn()
 
-			val newUserName = newDb.user ?: loginName
+			val newUserName = db.user ?: loginName
 
 			if (isUserDrop) {
 				scriptBuilder.append("DROP USER [", newUserName, "];")
 				scriptBuilder.appendJbLn()
 			} else {
-				val isUserCreated =
-					newDb.isSelected && !databaseModification.old.isSelected
+				val createUser = modKind == ModKind.Script ||
+						dbMod.old.isSelected.xor(dbMod.new!!.isSelected)
 
-				if (isUserCreated) {
+				if (createUser) {
 					scriptBuilder.append("CREATE USER [", newUserName, "] ")
 					scriptBuilder.appendJbLn()
 
 					scriptBuilder.append("FROM LOGIN [", loginName, "]")
 					scriptBuilder.appendJbLn()
 
-					val hasDefaultSchema = !newDb.defaultSchema.isNullOrBlank()
+					val hasDefaultSchema = !db.defaultSchema.isNullOrBlank()
 					if (hasDefaultSchema) {
-						scriptBuilder.append("WITH DEFAULT_SCHEMA = [", newDb.defaultSchema, "]")
+						scriptBuilder.append("WITH DEFAULT_SCHEMA = [", db.defaultSchema, "]")
 						scriptBuilder.appendJbLn()
 					}
 				} else {
-					scriptBuilder.append("ALTER USER [", databaseModification.old.user, "] ")
+					scriptBuilder.append("ALTER USER [", dbMod.old.user, "] ")
 					scriptBuilder.appendJbLn()
 
-					val userChanged = databaseModification.old.user != newDb.user
-					val schemaChanged = databaseModification.old.defaultSchema != newDb.defaultSchema
+					val userChanged = dbMod.old.user != db.user
+					val schemaChanged = dbMod.old.defaultSchema != db.defaultSchema
 
 					if (userChanged || schemaChanged) {
 						scriptBuilder.append("WITH ")
@@ -84,7 +92,7 @@ object LoginGenerator : ScriptGeneratorBase<MsLoginModel>() {
 								separateScope.invokeIf(schemaChanged) {
 									scriptBuilder.append(
 										"DEFAULT_SCHEMA = [",
-										newDb.defaultSchema,
+										db.defaultSchema,
 										"]"
 									)
 								}
@@ -99,9 +107,14 @@ object LoginGenerator : ScriptGeneratorBase<MsLoginModel>() {
 		scriptBuilder.appendJbLn()
 	}
 
-	private fun appendDatabaseRoles(scriptBuilder: StringBuilder, databaseRoleModList: ModList<MsDatabaseRoleMembership>, loginName: String) {
+	private fun appendDatabaseRoles(
+		scriptBuilder: StringBuilder,
+		databaseRoleModList: ModList<MsDatabaseRoleMembership>,
+		loginName: String
+	) {
 		if (!databaseRoleModList.any()) return
 
+		// TODO: Check to remove it.
 		val modifiedDatabaseRoles = databaseRoleModList
 			.filter { it.isModified }
 			.toList()
@@ -136,7 +149,11 @@ object LoginGenerator : ScriptGeneratorBase<MsLoginModel>() {
 		scriptBuilder.appendJbLn()
 	}
 
-	private fun appendServerRoles(scriptBuilder: StringBuilder, serverRoleModList: ModList<RoleMember>, loginName: String) {
+	private fun appendServerRoles(
+		scriptBuilder: StringBuilder,
+		serverRoleModList: ModList<RoleMember>,
+		loginName: String
+	) {
 		if (!serverRoleModList.any()) return
 
 		scriptBuilder.appendLnIfAbsent()
@@ -163,7 +180,7 @@ object LoginGenerator : ScriptGeneratorBase<MsLoginModel>() {
 		val scriptBuilder = StringBuilder()
 		appendOptions(scriptBuilder, model.login, false)
 		val loginName = model.login.new!!.name
-		appendDatabases(scriptBuilder, model.dbModList, loginName)
+		appendDatabases(scriptBuilder, model.dbModList, loginName, ModKind.PropertyAlter)
 		appendDatabaseRoles(scriptBuilder, model.dbRoleModList, loginName)
 		appendServerRoles(scriptBuilder, model.memberModList, loginName)
 		SecurityScriptUtil.appendServerPermissions(scriptBuilder, model.serverPermissionModList, loginName)
@@ -171,7 +188,15 @@ object LoginGenerator : ScriptGeneratorBase<MsLoginModel>() {
 	}
 
 	override fun getCreatePart(model: MsLoginModel, scriptBuilder: StringBuilder): StringBuilder {
-		val login = model.login.new ?: model.login.old
+		val login = model.login.actual
+		val modKind = model.login.kind
+
+		if (modKind == ModKind.Script) {
+			model.dbModList = model.loginDatabases.filter { it.user != null }.toModList()
+			model.dbRoleModList = model.dbRoles.toModList()
+			model.serverPermissionModList = model.serverPermissions.toModList()
+		}
+
 		val fromSource = when (login.principalKind) {
 			PrincipalKind.WINDOWS_LOGIN.toString() -> " FROM WINDOWS "
 			PrincipalKind.SQL_LOGIN.toString() -> ""
@@ -183,7 +208,7 @@ object LoginGenerator : ScriptGeneratorBase<MsLoginModel>() {
 		appendOptions(scriptBuilder, model.login, true, fromSource)
 		if (login.denyLogin) scriptBuilder.append("DENY CONNECT SQL TO [", login.name, "];").appendGo()
 
-		appendDatabases(scriptBuilder, model.dbModList, login.name)
+		appendDatabases(scriptBuilder, model.dbModList, login.name, modKind)
 		appendDatabaseRoles(scriptBuilder, model.dbRoleModList, login.name)
 		appendServerRoles(scriptBuilder, model.memberModList, login.name)
 		SecurityScriptUtil.appendServerPermissions(scriptBuilder, model.serverPermissionModList, login.name)
@@ -197,7 +222,7 @@ object LoginGenerator : ScriptGeneratorBase<MsLoginModel>() {
 		isCreationMode: Boolean,
 		fromPart: String = ""
 	) {
-		val login = modelModification.new ?: modelModification.old
+		val login = modelModification.actual
 		val prefix =
 			(if (isCreationMode) "CREATE " else "ALTER ") +
 					"LOGIN [" + login.name + "]" + fromPart

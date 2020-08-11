@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-package ru.coding4fun.intellij.database.model.property.security
+package ru.coding4fun.intellij.database.ui.form.common
 
-import ru.coding4fun.intellij.database.model.common.Identity
-
-data class MsCredential(
-	override var name: String,
-	var identityName: String,
-	override var id: String,
-	var password: String? = null,
-	var providerId: String? = null,
-	var providerName: String? = null
-) : Identity {
-	override fun toString(): String = name
+enum class ModKind {
+	PropertyCreate,
+	PropertyAlter,
+	Script
 }

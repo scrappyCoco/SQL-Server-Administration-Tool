@@ -16,15 +16,26 @@
 
 package ru.coding4fun.intellij.database.ui.form.common
 
+import ru.coding4fun.intellij.database.data.property.DbUtils
+import ru.coding4fun.intellij.database.model.common.Identity
+
 /*
-mode            | old                    | new
-------------------------------------------------
-property create | Id -> DbNull (Default) | +
-property alter  | Id                     | Id
-script create   | Id                     | null
-script drop     | Id                     | null
+mode            | old                    | new  | kind
+------------------------------------------------|
+property create | Id -> DbNull (Default) | +    | PropertyCreate
+property alter  | Id                     | Id   | PropertyAlter
+script create   | Id                     | null | Script
+script drop     | Id                     | null | Script
  */
 
-class ModelModification<Model>(var old: Model, var new: Model?) {
-    val isModified: Boolean get() = old?.hashCode() != new?.hashCode()
+class ModelModification<Model>(var old: Model, var new: Model?) where Model : Identity? {
+	val isModified: Boolean get() = old?.hashCode() != new?.hashCode()
+	val actual: Model get() = new ?: old
+
+	val kind: ModKind
+		get() = when {
+			old!!.id == DbUtils.defaultId -> ModKind.PropertyCreate
+			new != null -> ModKind.PropertyAlter
+			else -> ModKind.Script
+		}
 }
